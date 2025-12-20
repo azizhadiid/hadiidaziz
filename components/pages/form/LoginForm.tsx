@@ -1,6 +1,12 @@
 'use client'
 
 import React, { useState } from 'react';
+
+import { useRouter } from 'next/navigation'; // Import Router
+import supabase from '@/lib/db'; // Import Supabase kamu
+import toast from 'react-hot-toast'; // Import Toast
+
+// UI Components (Pastikan path import ini sesuai struktur foldermu)
 import { CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Lock, Mail, LogIn, AlertCircle } from 'lucide-react';
 
 export function LoginForm() {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -16,18 +23,71 @@ export function LoginForm() {
     const [error, setError] = useState('');
     const [isFocused, setIsFocused] = useState({ email: false, password: false });
 
-    const handleSubmit = () => {
+    // --- LOGIKA BARU: VALIDASI ---
+    const validateForm = () => {
+        if (!email || !email.includes('@')) {
+            const msg = 'Format email tidak valid.';
+            setError(msg);
+            toast.error(msg);
+            return false;
+        }
+        if (!password || password.length < 8) {
+            const msg = 'Password harus minimal 8 karakter.';
+            setError(msg);
+            toast.error(msg);
+            return false;
+        }
+        return true;
+    };
+
+    // --- LOGIKA BARU: HANDLE SUBMIT KE SUPABASE ---
+    const handleSubmit = async () => {
         setError('');
+
+        // 1. Cek Validasi
+        if (!validateForm()) return;
+
         setIsLoading(true);
 
-        setTimeout(() => {
-            if (email === 'azizalhadiid88@admin.com' && password === 'admin123') {
-                alert('Login berhasil! 🎉');
-            } else {
-                setError('Email atau password salah. Coba lagi.');
+        try {
+            // 2. Kirim ke Supabase Auth
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (authError) {
+                throw authError; // Lempar ke catch jika error
             }
+
+            // 3. Jika Sukses
+            if (data.user) {
+                toast.success('Login berhasil! Mengalihkan...', {
+                    duration: 3000,
+                    icon: '🎉',
+                });
+                // Redirect ke Dashboard Admin
+                router.push('/admin/dashboard');
+            }
+
+        } catch (err: any) {
+            // 4. Handle Error
+            console.error("Login Error:", err);
+            let errorMessage = 'Terjadi kesalahan saat login.';
+
+            if (err.message.includes('Invalid login credentials')) {
+                errorMessage = 'Email atau password salah. Coba lagi.';
+            } else if (err.message.includes('Email not confirmed')) {
+                errorMessage = 'Email belum diverifikasi.';
+            } else {
+                errorMessage = err.message; // Error lain dari Supabase
+            }
+
+            setError(errorMessage);
+            toast.error(errorMessage);
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -51,7 +111,8 @@ export function LoginForm() {
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email Address</Label>
                     <div className="relative group">
-                        <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.email ? 'text-orange-500' : 'text-slate-400'}`} />
+                        <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.email ? 'text-orange-500' : 'text-slate-400'
+                            }`} />
                         <Input
                             id="email"
                             type="email"
@@ -70,7 +131,8 @@ export function LoginForm() {
                 <div className="space-y-2">
                     <Label htmlFor="password" className="text-sm font-medium text-slate-700">Password</Label>
                     <div className="relative group">
-                        <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.password ? 'text-orange-500' : 'text-slate-400'}`} />
+                        <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.password ? 'text-orange-500' : 'text-slate-400'
+                            }`} />
                         <Input
                             id="password"
                             type={showPassword ? 'text' : 'password'}
@@ -87,7 +149,11 @@ export function LoginForm() {
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200"
                         >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            {showPassword ? (
+                                <EyeOff className="w-5 h-5" />
+                            ) : (
+                                <Eye className="w-5 h-5" />
+                            )}
                         </button>
                     </div>
                 </div>
@@ -95,7 +161,10 @@ export function LoginForm() {
                 {/* Remember & Forgot */}
                 <div className="flex items-center justify-between text-sm">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 cursor-pointer" />
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 cursor-pointer"
+                        />
                         <span className="text-slate-600 group-hover:text-slate-900 transition-colors">Remember me</span>
                     </label>
                     <button type="button" onClick={() => alert('Please contact support')} className="text-orange-600 hover:text-orange-700 font-medium transition-colors">
