@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 // Ini adalah Server Component (tanpa "use client")
-export default function LoginAdminPage() {
+export default function DashboardAdminPageSection() {
     // Tugasnya hanya me-render Client Component
     return <AdminDashboard />;
 }
