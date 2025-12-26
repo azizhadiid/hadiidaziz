@@ -1,13 +1,13 @@
-import PendidikanAdminPage from '@/components/pages/admin/PendidikanAdminPage';
+import AdminPengalamanPage from '@/components/pages/admin/PengalamanAdminPage';
 import type { Metadata } from 'next';
 
 // 'metadata' sekarang berada di Server Component, ini sudah benar.
 export const metadata: Metadata = {
-    title: 'Pendidikan Admin', // Ini akan mengisi placeholder %s
+    title: 'Pengalaman Admin', // Ini akan mengisi placeholder %s
 };
 
 // Ini adalah Server Component (tanpa "use client")
-export default function PendidikanAdminPageSection() {
+export default function PengalamanAdminPageSection() {
     // Tugasnya hanya me-render Client Component
-    return <PendidikanAdminPage />;
+    return <AdminPengalamanPage />;
 }
