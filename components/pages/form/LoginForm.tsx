@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import supabase from '@/lib/db';
+import toast from 'react-hot-toast';
 
-import { useRouter } from 'next/navigation'; // Import Router
-import supabase from '@/lib/db'; // Import Supabase kamu
-import toast from 'react-hot-toast'; // Import Toast
-
-// UI Components (Pastikan path import ini sesuai struktur foldermu)
+// UI Components
 import { CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ export function LoginForm() {
     const [error, setError] = useState('');
     const [isFocused, setIsFocused] = useState({ email: false, password: false });
 
-    // --- LOGIKA BARU: VALIDASI ---
+    // --- 1. VALIDASI INPUT ---
     const validateForm = () => {
         if (!email || !email.includes('@')) {
             const msg = 'Format email tidak valid.';
@@ -31,8 +30,8 @@ export function LoginForm() {
             toast.error(msg);
             return false;
         }
-        if (!password || password.length < 8) {
-            const msg = 'Password harus minimal 8 karakter.';
+        if (!password || password.length < 6) { // Supabase default min 6
+            const msg = 'Password terlalu pendek.';
             setError(msg);
             toast.error(msg);
             return false;
@@ -40,47 +39,65 @@ export function LoginForm() {
         return true;
     };
 
-    // --- LOGIKA BARU: HANDLE SUBMIT KE SUPABASE ---
+    // --- 2. HANDLE LOGIN & CEK ROLE ---
     const handleSubmit = async () => {
         setError('');
-
-        // 1. Cek Validasi
         if (!validateForm()) return;
 
         setIsLoading(true);
 
         try {
-            // 2. Kirim ke Supabase Auth
-            const { data, error: authError } = await supabase.auth.signInWithPassword({
+            // A. Login ke Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password,
             });
 
-            if (authError) {
-                throw authError; // Lempar ke catch jika error
-            }
+            if (authError) throw authError;
 
-            // 3. Jika Sukses
-            if (data.user) {
-                toast.success('Login berhasil! Mengalihkan...', {
+            if (authData.user) {
+                // B. CEK ROLE di tabel user_profiles
+                // Kita ambil data role berdasarkan ID user yang baru login
+                const { data: profileData, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .select('role')
+                    .eq('id', authData.user.id)
+                    .single();
+
+                if (profileError) {
+                    // Jika gagal ambil profile (misal koneksi putus)
+                    await supabase.auth.signOut(); // Logout paksa
+                    throw new Error("Gagal memverifikasi profil pengguna.");
+                }
+
+                // C. VALIDASI ROLE ADMIN
+                if (profileData?.role !== 'admin') {
+                    // Jika role BUKAN admin
+                    await supabase.auth.signOut(); // Logout paksa
+                    throw new Error("Akses Ditolak: Anda bukan Admin.");
+                }
+
+                // D. JIKA SUKSES & ADMIN
+                toast.success('Selamat datang, Admin!', {
                     duration: 3000,
                     icon: '🎉',
                 });
-                // Redirect ke Dashboard Admin
+
+                // Redirect ke Dashboard
                 router.push('/admin/dashboard');
+                router.refresh(); // Refresh agar middleware server-side mendeteksi session baru
             }
 
         } catch (err: any) {
-            // 4. Handle Error
             console.error("Login Error:", err);
             let errorMessage = 'Terjadi kesalahan saat login.';
 
             if (err.message.includes('Invalid login credentials')) {
-                errorMessage = 'Email atau password salah. Coba lagi.';
+                errorMessage = 'Email atau password salah.';
             } else if (err.message.includes('Email not confirmed')) {
                 errorMessage = 'Email belum diverifikasi.';
             } else {
-                errorMessage = err.message; // Error lain dari Supabase
+                errorMessage = err.message;
             }
 
             setError(errorMessage);
@@ -111,18 +128,17 @@ export function LoginForm() {
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email Address</Label>
                     <div className="relative group">
-                        <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.email ? 'text-orange-500' : 'text-slate-400'
-                            }`} />
+                        <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.email ? 'text-orange-500' : 'text-slate-400'}`} />
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Aziz@admin.com"
+                            placeholder="admin@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             onFocus={() => setIsFocused({ ...isFocused, email: true })}
                             onBlur={() => setIsFocused({ ...isFocused, email: false })}
                             onKeyPress={handleKeyPress}
-                            className="pl-11 h-12 border-slate-200 focus:border-orange-500 focus:ring-orange-500 transition-all duration-300"
+                            className="pl-11 h-12 border-slate-200 focus:border-orange-500 focus:ring-orange-500 transition-all duration-300 rounded-xl"
                         />
                     </div>
                 </div>
@@ -131,62 +147,43 @@ export function LoginForm() {
                 <div className="space-y-2">
                     <Label htmlFor="password" className="text-sm font-medium text-slate-700">Password</Label>
                     <div className="relative group">
-                        <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.password ? 'text-orange-500' : 'text-slate-400'
-                            }`} />
+                        <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${isFocused.password ? 'text-orange-500' : 'text-slate-400'}`} />
                         <Input
                             id="password"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="Enter your password"
+                            placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             onFocus={() => setIsFocused({ ...isFocused, password: true })}
                             onBlur={() => setIsFocused({ ...isFocused, password: false })}
                             onKeyPress={handleKeyPress}
-                            className="pl-11 pr-11 h-12 border-slate-200 focus:border-orange-500 focus:ring-orange-500 transition-all duration-300"
+                            className="pl-11 pr-11 h-12 border-slate-200 focus:border-orange-500 focus:ring-orange-500 transition-all duration-300 rounded-xl"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200"
                         >
-                            {showPassword ? (
-                                <EyeOff className="w-5 h-5" />
-                            ) : (
-                                <Eye className="w-5 h-5" />
-                            )}
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                     </div>
-                </div>
-
-                {/* Remember & Forgot */}
-                <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                            type="checkbox"
-                            className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500 cursor-pointer"
-                        />
-                        <span className="text-slate-600 group-hover:text-slate-900 transition-colors">Remember me</span>
-                    </label>
-                    <button type="button" onClick={() => alert('Please contact support')} className="text-orange-600 hover:text-orange-700 font-medium transition-colors">
-                        Forgot password?
-                    </button>
                 </div>
 
                 {/* Login Button */}
                 <Button
                     onClick={handleSubmit}
                     disabled={!email || !password || isLoading}
-                    className="w-full h-12 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full h-12 mt-4 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-lg hover:shadow-xl rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                     {isLoading ? (
                         <div className="flex items-center gap-2">
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Signing in...
+                            Checking Access...
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
                             <LogIn className="w-5 h-5" />
-                            Sign In
+                            Sign In as Admin
                         </div>
                     )}
                 </Button>
