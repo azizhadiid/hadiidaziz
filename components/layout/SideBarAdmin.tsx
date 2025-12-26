@@ -1,11 +1,13 @@
 'use client'
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import supabase from '@/lib/db'; // Import koneksi Supabase
+import toast from 'react-hot-toast'; // Import Toast untuk notifikasi
 import {
     X, LayoutDashboard, Award, GraduationCap,
-    Briefcase, FolderOpen, User, LogOut, ChevronRight
+    Briefcase, FolderOpen, User, LogOut, ChevronRight, Loader2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -14,7 +16,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
-    const pathname = usePathname(); // Untuk mendeteksi menu aktif otomatis
+    const pathname = usePathname();
+    const router = useRouter();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const menuItems = [
         { href: '/admin/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard' },
@@ -24,6 +28,29 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         { href: '/admin/portofolio', icon: <FolderOpen className="w-5 h-5" />, label: 'Portofolio' },
         { href: '/admin/profil', icon: <User className="w-5 h-5" />, label: 'Profil' },
     ];
+
+    // --- FUNGSI LOGOUT ---
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            // 1. Hapus sesi di Supabase (Otomatis hapus Cookies)
+            const { error } = await supabase.auth.signOut();
+
+            if (error) throw error;
+
+            // 2. Beri notifikasi
+            toast.success('Berhasil logout. Sampai jumpa!');
+
+            // 3. Redirect ke login & Refresh agar Middleware mendeteksi perubahan
+            router.replace('/login');
+            router.refresh();
+
+        } catch (error: any) {
+            console.error('Logout Error:', error);
+            toast.error('Gagal logout, silakan coba lagi.');
+            setIsLoggingOut(false);
+        }
+    };
 
     return (
         <aside
@@ -83,9 +110,19 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
                 {/* Logout Button */}
                 <div className="p-4 border-t border-slate-100">
-                    <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group">
-                        <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-500" />
-                        <span className="font-medium">Logout</span>
+                    <button
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoggingOut ? (
+                            <Loader2 className="w-5 h-5 text-red-500 animate-spin" />
+                        ) : (
+                            <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-500" />
+                        )}
+                        <span className="font-medium">
+                            {isLoggingOut ? 'Keluar...' : 'Logout'}
+                        </span>
                     </button>
                 </div>
             </div>
