@@ -70,6 +70,43 @@ alter table public.admin_profiles
   
   add column deskripsi_profile text;
 
+-- Menambahkan kolom updated_at yang ketinggalan
+alter table public.admin_profiles
+add column updated_at timestamptz default now();
+
+-- (Opsional) Mengisi nilai default updated_at untuk data yang sudah ada (jika ada)
+update public.admin_profiles
+set updated_at = now()
+where updated_at is null;
+
+-- 1. Membuat Bucket untuk Foto Profil (Public)
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true);
+
+-- 2. Mengatur Policy Storage (RLS)
+
+-- a. Siapa saja boleh MELIHAT foto (untuk ditampilkan di web)
+create policy "Avatar images are publicly accessible"
+on storage.objects for select
+using ( bucket_id = 'avatars' );
+
+-- b. Hanya Admin yang boleh UPLOAD foto
+create policy "Admin can upload avatars"
+on storage.objects for insert
+with check (
+  bucket_id = 'avatars' 
+  and auth.role() = 'authenticated' -- User harus login
+);
+
+-- c. Hanya Admin yang boleh UPDATE/DELETE fotonya sendiri
+create policy "Admin can update own avatar"
+on storage.objects for update
+using ( bucket_id = 'avatars' and auth.uid() = owner );
+
+create policy "Admin can delete own avatar"
+on storage.objects for delete
+using ( bucket_id = 'avatars' and auth.uid() = owner );
+
 -- 2. Mengaktifkan RLS
 alter table public.admin_profiles enable row level security;
 
@@ -273,6 +310,32 @@ with check (
 -- ///////////////////////////// Akhir Tabel Pendidikan
 
 -- ///////////////////////////// Tabel Sertifikat
+-- 1. Membuat Bucket 'certificates'
+insert into storage.buckets (id, name, public)
+values ('certificates', 'certificates', true);
+
+-- 2. Policy: Publik boleh melihat sertifikat (untuk ditampilkan di portfolio nanti)
+create policy "Certificates are publicly accessible"
+on storage.objects for select
+using ( bucket_id = 'certificates' );
+
+-- 3. Policy: Admin (Authenticated) boleh upload
+create policy "Admin can upload certificates"
+on storage.objects for insert
+with check (
+  bucket_id = 'certificates'
+  and auth.role() = 'authenticated'
+);
+
+-- 4. Policy: Admin boleh update/delete miliknya sendiri
+create policy "Admin can update own certificates"
+on storage.objects for update
+using ( bucket_id = 'certificates' and auth.uid() = owner );
+
+create policy "Admin can delete own certificates"
+on storage.objects for delete
+using ( bucket_id = 'certificates' and auth.uid() = owner );
+
 create table public.certificates (
   id uuid default gen_random_uuid() primary key,
   
