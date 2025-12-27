@@ -30,6 +30,7 @@ export default function SertifikatAdminPage() {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false); // Loading saat simpan
+    const [isDeleting, setIsDeleting] = useState(false); // Loading saat hapus
 
     // --- STATE UI ---
     const [searchQuery, setSearchQuery] = useState('');
@@ -86,14 +87,15 @@ export default function SertifikatAdminPage() {
         setFormData(prev => ({ ...prev, [id]: value }));
     };
 
-    // 3. HANDLER FILE SELECT & PREVIEW
+    // 3. HANDLER FILE SELECT & PREVIEW (VALIDASI 2MB)
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
 
-            // Validasi Ukuran (2MB)
+            // Validasi Ukuran (2MB = 2 * 1024 * 1024 bytes)
             if (file.size > 2 * 1024 * 1024) {
-                toast.error("Ukuran file maksimal 2MB!");
+                toast.error("Ukuran file terlalu besar! Maksimal 2MB.");
+                e.target.value = ''; // Reset input
                 return;
             }
 
@@ -104,7 +106,7 @@ export default function SertifikatAdminPage() {
 
     // 4. HANDLER SIMPAN DATA (UPLOAD + INSERT)
     const handleSave = async () => {
-        // Validasi Input
+        // Validasi Input Wajib
         if (!formData.nama_sertifikat || !formData.organisasi_sertifikat) {
             toast.error("Nama Sertifikat dan Penerbit wajib diisi!");
             return;
@@ -112,19 +114,22 @@ export default function SertifikatAdminPage() {
 
         setIsSaving(true);
         try {
+            // A. Ambil Admin ID
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("User tidak ditemukan.");
+            if (!user) throw new Error("Sesi habis, silakan login ulang.");
 
             let finalImageUrl = null;
 
-            // A. Proses Upload Gambar (Jika ada file dipilih)
+            // B. Proses Upload Gambar (Jika ada file dipilih)
             if (selectedFile) {
                 const fileExt = selectedFile.name.split('.').pop();
+                // Nama file unik: userID-timestamp.ext
                 const fileName = `${user.id}-${Date.now()}.${fileExt}`;
                 const filePath = `${fileName}`;
 
+                // Upload ke bucket 'certificates'
                 const { error: uploadError } = await supabase.storage
-                    .from('certificates') // Bucket 'certificates'
+                    .from('certificates')
                     .upload(filePath, selectedFile);
 
                 if (uploadError) throw uploadError;
@@ -137,7 +142,7 @@ export default function SertifikatAdminPage() {
                 finalImageUrl = publicUrl;
             }
 
-            // B. Proses Insert ke Database
+            // C. Proses Insert ke Database
             const { error: insertError } = await supabase
                 .from('certificates')
                 .insert({
@@ -159,7 +164,7 @@ export default function SertifikatAdminPage() {
 
         } catch (error: any) {
             console.error("Save Error:", error);
-            toast.error("Gagal menyimpan sertifikat: " + error.message);
+            toast.error("Gagal menyimpan: " + error.message);
         } finally {
             setIsSaving(false);
         }
@@ -175,6 +180,7 @@ export default function SertifikatAdminPage() {
         });
         setSelectedFile(null);
         setPreviewUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     // Filter & Pagination Logic
@@ -186,6 +192,7 @@ export default function SertifikatAdminPage() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentCertificates = filteredCertificates.slice(startIndex, startIndex + itemsPerPage);
 
+    // --- HANDLER DELETE ---
     const handleDeleteClick = (cert: Certificate) => {
         setSelectedCert(cert);
         setShowDeleteModal(true);
@@ -193,9 +200,25 @@ export default function SertifikatAdminPage() {
 
     const confirmDelete = async () => {
         if (!selectedCert) return;
+        setIsDeleting(true);
 
-        // Optimistic UI update bisa dilakukan disini, tapi kita fetch ulang saja agar aman
         try {
+            // 1. Cek apakah ada gambar yang perlu dihapus dari Storage
+            if (selectedCert.foto_sertifikat) {
+                // Ekstrak nama file dari URL
+                // URL: .../public/certificates/[FILENAME]
+                const imageUrl = selectedCert.foto_sertifikat;
+                const fileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+
+                // Hapus file dari bucket 'certificates'
+                const { error: storageError } = await supabase.storage
+                    .from('certificates')
+                    .remove([fileName]);
+
+                if (storageError) console.warn("Gagal hapus gambar lama:", storageError.message);
+            }
+
+            // 2. Hapus Data dari Database
             const { error } = await supabase
                 .from('certificates')
                 .delete()
@@ -203,12 +226,21 @@ export default function SertifikatAdminPage() {
 
             if (error) throw error;
 
-            toast.success("Sertifikat berhasil dihapus");
+            // 3. Notifikasi Sukses Sesuai Request
+            toast.success(`Sertifikat "${selectedCert.nama_sertifikat}" telah berhasil terhapus`, {
+                icon: '🗑️',
+                duration: 4000
+            });
+
+            // 4. Refresh Data
             fetchCertificates();
+
         } catch (error: any) {
             toast.error("Gagal menghapus: " + error.message);
         } finally {
+            setIsDeleting(false);
             setShowDeleteModal(false);
+            setSelectedCert(null);
         }
     };
 
@@ -267,7 +299,7 @@ export default function SertifikatAdminPage() {
                     {currentCertificates.map((cert) => (
                         <Card key={cert.id} className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden bg-white flex flex-col h-full">
 
-                            {/* --- PERBAIKAN DISPLAY IMAGE --- */}
+                            {/* --- DISPLAY IMAGE --- */}
                             <div className="relative h-48 overflow-hidden bg-slate-200 shrink-0 border-b border-slate-100">
                                 {cert.foto_sertifikat ? (
                                     <img
@@ -281,8 +313,7 @@ export default function SertifikatAdminPage() {
                                     </div>
                                 )}
 
-                                {/* Overlay Gradient agar teks putih di atas gambar (jika ada) terbaca, 
-                                    tapi disini kita tidak taruh teks di atas gambar, jadi untuk estetika hover saja */}
+                                {/* Overlay Gradient */}
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
 
                                 {/* Tombol View */}
@@ -415,7 +446,17 @@ export default function SertifikatAdminPage() {
                         <p className="text-sm text-center text-slate-500 mb-6">Apakah Anda yakin ingin menghapus <strong>"{selectedCert?.nama_sertifikat}"</strong>?</p>
                         <div className="flex gap-3">
                             <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowDeleteModal(false)}>Batal</Button>
-                            <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl" onClick={confirmDelete}>Ya, Hapus</Button>
+
+                            {/* Tombol Hapus dengan Loading */}
+                            <Button
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : 'Ya, Hapus'}
+                            </Button>
                         </div>
                     </div>
                 </div>
