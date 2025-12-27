@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,122 +20,93 @@ import {
     CheckCircle,
     Award,
     X,
-    UploadCloud
+    UploadCloud,
+    Loader2
 } from 'lucide-react';
 import MainLayoutAdmin from '@/components/layout/MainLayoutAdmin';
+import supabase from '@/lib/db';
+import toast from 'react-hot-toast';
 
-// Definisikan tipe data untuk Sertifikat
+// 1. Sesuaikan Interface dengan Database
 interface Certificate {
-    id: number;
-    title: string;
-    issuer: string;
-    date: string;
-    image: string;
-    credentialId: string;
-    status: string;
+    id: string;
+    nama_sertifikat: string;
+    organisasi_sertifikat: string;
+    periode_sertifikat: string;
+    no_sertifikat: string;
+    foto_sertifikat: string | null;
+    keahlian: string; // Disimpan sebagai string text di DB
+    link_organisasi: string;
+    created_at: string;
 }
 
 export default function SertifikatAdminPage() {
+    // State Data
+    const [certificates, setCertificates] = useState<Certificate[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // State UI & Filter
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    // State untuk Modal
+    // State Modal (Disiapkan untuk fitur selanjutnya)
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
 
     const itemsPerPage = 6;
 
-    // Dummy Data
-    const [certificates, setCertificates] = useState<Certificate[]>([
-        {
-            id: 1,
-            title: 'AWS Certified Solutions Architect',
-            issuer: 'Amazon Web Services',
-            date: '2024-11-15',
-            image: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&h=300&fit=crop',
-            credentialId: 'AWS-SA-2024-001',
-            status: 'active'
-        },
-        {
-            id: 2,
-            title: 'Google Cloud Professional',
-            issuer: 'Google Cloud',
-            date: '2024-10-22',
-            image: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=400&h=300&fit=crop',
-            credentialId: 'GCP-PRO-2024-002',
-            status: 'active'
-        },
-        {
-            id: 3,
-            title: 'Meta Front-End Developer',
-            issuer: 'Meta (Facebook)',
-            date: '2024-09-10',
-            image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop',
-            credentialId: 'META-FE-2024-003',
-            status: 'active'
-        },
-        {
-            id: 4,
-            title: 'Microsoft Azure Administrator',
-            issuer: 'Microsoft',
-            date: '2024-08-05',
-            image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
-            credentialId: 'AZ-104-2024-004',
-            status: 'active'
-        },
-        {
-            id: 5,
-            title: 'Certified Kubernetes Administrator',
-            issuer: 'Linux Foundation',
-            date: '2024-07-18',
-            image: 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=400&h=300&fit=crop',
-            credentialId: 'CKA-2024-005',
-            status: 'active'
-        },
-        {
-            id: 6,
-            title: 'Professional Scrum Master',
-            issuer: 'Scrum.org',
-            date: '2024-06-12',
-            image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-            credentialId: 'PSM-I-2024-006',
-            status: 'active'
-        },
-        {
-            id: 7,
-            title: 'Adobe Certified Expert',
-            issuer: 'Adobe',
-            date: '2024-05-20',
-            image: 'https://images.unsplash.com/photo-1626785774625-ddcddc3445e9?w=400&h=300&fit=crop',
-            credentialId: 'ACE-2024-007',
-            status: 'active'
-        },
-    ]);
+    // 2. Fetch Data dari Supabase
+    useEffect(() => {
+        const fetchCertificates = async () => {
+            setIsLoading(true);
+            try {
+                // Ambil User Login
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return; // Middleware akan handle redirect
 
-    // Filtering Logic
+                // Query Data
+                const { data, error } = await supabase
+                    .from('certificates')
+                    .select('*')
+                    .eq('admin_id', user.id) // Filter punya admin ini saja
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                setCertificates(data || []);
+            } catch (error: any) {
+                console.error('Error fetching certificates:', error);
+                toast.error('Gagal memuat data sertifikat.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCertificates();
+    }, []);
+
+    // 3. Logic Searching & Filtering
     const filteredCertificates = certificates.filter(cert =>
-        cert.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cert.issuer.toLowerCase().includes(searchQuery.toLowerCase())
+        cert.nama_sertifikat.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        cert.organisasi_sertifikat.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Pagination Logic
+    // 4. Logic Pagination
     const totalPages = Math.ceil(filteredCertificates.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentCertificates = filteredCertificates.slice(startIndex, startIndex + itemsPerPage);
 
-    // Handlers
+    // Handlers (Placeholder untuk Delete/Edit nanti)
     const handleDeleteClick = (cert: Certificate) => {
         setSelectedCert(cert);
         setShowDeleteModal(true);
     };
 
     const confirmDelete = () => {
-        if (selectedCert) {
-            setCertificates(certificates.filter(c => c.id !== selectedCert.id));
-            setShowDeleteModal(false);
-            setSelectedCert(null);
-        }
+        // Logic hapus ke DB akan ditambahkan nanti
+        toast.success("Fitur hapus akan segera aktif");
+        setShowDeleteModal(false);
     };
 
     return (
@@ -150,7 +121,10 @@ export default function SertifikatAdminPage() {
                         type="text"
                         placeholder="Cari sertifikat atau penerbit..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentPage(1); // Reset ke halaman 1 saat search
+                        }}
                         className="pl-10 h-11 border-slate-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl"
                     />
                 </div>
@@ -177,10 +151,11 @@ export default function SertifikatAdminPage() {
             {/* --- STATS SUMMARY --- */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                    { label: 'Total', value: certificates.length, icon: <Award className="w-5 h-5 text-orange-600" />, bg: 'bg-orange-100' },
-                    { label: 'Active', value: certificates.length, icon: <CheckCircle className="w-5 h-5 text-green-600" />, bg: 'bg-green-100' },
-                    { label: 'This Year', value: '2024', icon: <Calendar className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-100' },
-                    { label: 'Issuers', value: '6', icon: <Building className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-100' },
+                    { label: 'Total Sertifikat', value: certificates.length, icon: <Award className="w-5 h-5 text-orange-600" />, bg: 'bg-orange-100' },
+                    // Hitung jumlah unik organisasi
+                    { label: 'Penerbit', value: new Set(certificates.map(c => c.organisasi_sertifikat)).size, icon: <Building className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-100' },
+                    { label: 'Tahun Ini', value: certificates.filter(c => c.created_at.includes(new Date().getFullYear().toString())).length, icon: <Calendar className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-100' },
+                    { label: 'Status', value: 'Active', icon: <CheckCircle className="w-5 h-5 text-green-600" />, bg: 'bg-green-100' },
                 ].map((stat, idx) => (
                     <Card key={idx} className="border-0 shadow-md">
                         <CardContent className="p-4">
@@ -198,21 +173,34 @@ export default function SertifikatAdminPage() {
                 ))}
             </div>
 
-            {/* --- CERTIFICATES GRID --- */}
-            {filteredCertificates.length > 0 ? (
+            {/* --- CONTENT AREA --- */}
+            {isLoading ? (
+                // Loading State
+                <div className="flex flex-col items-center justify-center py-20">
+                    <Loader2 className="w-10 h-10 text-orange-500 animate-spin mb-4" />
+                    <p className="text-slate-500">Memuat data sertifikat...</p>
+                </div>
+            ) : filteredCertificates.length > 0 ? (
+                // Data List
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                     {currentCertificates.map((cert) => (
                         <Card
                             key={cert.id}
-                            className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden bg-white"
+                            className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden bg-white flex flex-col h-full"
                         >
                             {/* Image Section */}
-                            <div className="relative h-48 overflow-hidden bg-slate-100">
-                                <img
-                                    src={cert.image}
-                                    alt={cert.title}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                />
+                            <div className="relative h-48 overflow-hidden bg-slate-100 shrink-0">
+                                {cert.foto_sertifikat ? (
+                                    <img
+                                        src={cert.foto_sertifikat}
+                                        alt={cert.nama_sertifikat}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300">
+                                        <Award className="w-12 h-12" />
+                                    </div>
+                                )}
                                 <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                                 {/* Quick Actions Overlay */}
@@ -220,43 +208,39 @@ export default function SertifikatAdminPage() {
                                     <button className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-700 hover:text-orange-600 shadow-lg hover:scale-110 transition-all cursor-pointer">
                                         <Eye className="w-4 h-4" />
                                     </button>
-                                    <button className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 shadow-lg hover:scale-110 transition-all cursor-pointer">
-                                        <Download className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                {/* Status Badge */}
-                                <div className="absolute top-3 left-3">
-                                    <span className="px-2 py-1 bg-green-500/90 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1">
-                                        <CheckCircle className="w-3 h-3" />
-                                        Active
-                                    </span>
                                 </div>
                             </div>
 
                             {/* Content Section */}
-                            <CardContent className="p-5">
-                                <div className="mb-4">
-                                    <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
-                                        {cert.title}
+                            <CardContent className="p-5 flex flex-col flex-1">
+                                <div className="mb-4 flex-1">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors" title={cert.nama_sertifikat}>
+                                        {cert.nama_sertifikat}
                                     </h3>
                                     <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
-                                        <Building className="w-4 h-4" />
-                                        <span className="line-clamp-1">{cert.issuer}</span>
+                                        <Building className="w-4 h-4 shrink-0" />
+                                        <span className="line-clamp-1">{cert.organisasi_sertifikat}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-500">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>{new Date(cert.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                        <Calendar className="w-4 h-4 shrink-0" />
+                                        {/* Tampilkan periode langsung karena di DB tipenya Text */}
+                                        <span>{cert.periode_sertifikat || '-'}</span>
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-100">
-                                    <p className="text-xs text-slate-500 mb-3 font-mono">ID: {cert.credentialId}</p>
+                                <div className="pt-4 border-t border-slate-100 mt-auto">
+                                    <p className="text-xs text-slate-500 mb-3 font-mono truncate">
+                                        No: {cert.no_sertifikat || '-'}
+                                    </p>
                                     <div className="flex gap-2">
                                         <Button
                                             size="sm"
                                             variant="outline"
                                             className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg"
+                                            onClick={() => {
+                                                // Nanti diisi fungsi edit
+                                                alert("Edit: " + cert.nama_sertifikat)
+                                            }}
                                         >
                                             <Edit className="w-3 h-3 mr-1" />
                                             Edit
@@ -280,15 +264,30 @@ export default function SertifikatAdminPage() {
                 // --- EMPTY STATE ---
                 <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed mb-6">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Search className="w-8 h-8 text-slate-300" />
+                        {searchQuery ? <Search className="w-8 h-8 text-slate-300" /> : <Award className="w-8 h-8 text-slate-300" />}
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">Sertifikat tidak ditemukan</h3>
-                    <p className="text-slate-500">Coba kata kunci lain atau tambahkan sertifikat baru.</p>
+                    <h3 className="text-lg font-bold text-slate-900">
+                        {searchQuery ? 'Tidak ditemukan' : 'Belum ada sertifikat'}
+                    </h3>
+                    <p className="text-slate-500 mb-6">
+                        {searchQuery
+                            ? `Tidak ada hasil untuk "${searchQuery}"`
+                            : 'Mulai tambahkan sertifikat profesional Anda di sini.'}
+                    </p>
+                    {!searchQuery && (
+                        <Button
+                            onClick={() => setShowAddModal(true)}
+                            className="bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-xl shadow-lg hover:shadow-xl"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Tambah Sertifikat Pertama
+                        </Button>
+                    )}
                 </div>
             )}
 
             {/* --- PAGINATION --- */}
-            {totalPages > 1 && (
+            {!isLoading && filteredCertificates.length > itemsPerPage && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-slate-600">
                         Menampilkan {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredCertificates.length)} dari {filteredCertificates.length} data
@@ -335,7 +334,7 @@ export default function SertifikatAdminPage() {
                 </div>
             )}
 
-            {/* --- MODAL DELETE (Custom Popup) --- */}
+            {/* --- MODAL DELETE (Placeholder UI) --- */}
             {showDeleteModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 scale-100 animate-in zoom-in-95 duration-200">
@@ -344,7 +343,7 @@ export default function SertifikatAdminPage() {
                         </div>
                         <h3 className="text-lg font-bold text-center text-slate-900 mb-2">Hapus Sertifikat?</h3>
                         <p className="text-sm text-center text-slate-500 mb-6">
-                            Apakah Anda yakin ingin menghapus <strong>"{selectedCert?.title}"</strong>? Tindakan ini tidak dapat dibatalkan.
+                            Apakah Anda yakin ingin menghapus <strong>"{selectedCert?.nama_sertifikat}"</strong>? Tindakan ini tidak dapat dibatalkan.
                         </p>
                         <div className="flex gap-3">
                             <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowDeleteModal(false)}>
@@ -358,7 +357,7 @@ export default function SertifikatAdminPage() {
                 </div>
             )}
 
-            {/* --- MODAL ADD (Custom Popup) --- */}
+            {/* --- MODAL ADD (Placeholder UI) --- */}
             {showAddModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -369,6 +368,7 @@ export default function SertifikatAdminPage() {
                             </button>
                         </div>
 
+                        {/* Placeholder Form Content */}
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Nama Sertifikat</Label>
@@ -380,8 +380,8 @@ export default function SertifikatAdminPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="date">Tanggal Terbit</Label>
-                                    <Input id="date" type="date" className="rounded-xl" />
+                                    <Label htmlFor="date">Periode</Label>
+                                    <Input id="date" placeholder="Jan 2024" className="rounded-xl" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="id">Credential ID</Label>
