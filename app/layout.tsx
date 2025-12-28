@@ -5,16 +5,22 @@ import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '700', '900'], // Pilih ketebalan yang Anda butuhkan
-  variable: '--font-inter', // Ini akan membuat CSS variable
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
   title: {
-    default: 'Aziz Hadiid', // Judul untuk halaman utama (/)
-    template: '%s | Aziz Hadiid', // Template untuk halaman lain
+    default: 'Aziz Hadiid',
+    template: '%s | Aziz Hadiid',
   },
-  description: 'Aziz Hadiid - Website Portfolio Aziz Alhadiid.'
+  description: 'Aziz Hadiid - Website Portfolio Aziz Alhadiid.',
+  icons: {
+    // Menambahkan favicon
+    icon: '/img/logo.png',
+    shortcut: '/img/logo.png',
+    apple: '/img/logo.png', // Opsional: ikon untuk iPhone/iPad
+  },
 };
 
 export default function RootLayout({
@@ -25,11 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={inter.variable}
+        className={`${inter.variable} font-sans antialiased`}
       >
         {children}
         <Toaster position="top-center" reverseOrder={false} />
       </body>
     </html>
   );
-}
+} 

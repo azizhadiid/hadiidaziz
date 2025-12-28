@@ -1,368 +1,164 @@
 'use client'
 
-import React, { useState } from 'react';
-import { Menu, X, ChevronDown, Github, Linkedin, Mail, Twitter, ExternalLink, Code, Palette, Smartphone, Globe } from 'lucide-react';
+import React from 'react';
+import { Mail, ExternalLink, Code, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LanguageProvider, useLanguage } from '@/components/contexts/LanguageContext';
+import MainLayoutGuest from '@/components/layout/guest/MainLayoutGuest';
 
-export default function LandingPageGuest() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState('home');
+// Kita pisahkan konten ke komponen terpisah agar bisa pakai hook useLanguage
+function LandingPageContent() {
+    const { t, lang } = useLanguage(); // Ambil teks dan status bahasa
 
-    const services = [
-        {
-            icon: <Code className="w-8 h-8" />,
-            title: "Web Development",
-            description: "Building responsive and performant web applications using modern technologies and best practices."
-        },
-        {
-            icon: <Palette className="w-8 h-8" />,
-            title: "UI/UX Design",
-            description: "Creating beautiful and intuitive user interfaces that provide exceptional user experiences."
-        },
-        {
-            icon: <Smartphone className="w-8 h-8" />,
-            title: "Mobile Development",
-            description: "Developing native and cross-platform mobile applications for iOS and Android platforms."
-        },
-        {
-            icon: <Globe className="w-8 h-8" />,
-            title: "Digital Solutions",
-            description: "Providing comprehensive digital solutions tailored to your business needs and goals."
-        }
-    ];
-
+    // Data Dummy (Nanti diganti fetch DB)
     const portfolio = [
         {
-            title: "E-Commerce Platform",
+            title: "Sistem Informasi Akademik",
             category: "Web Development",
             image: "https://images.unsplash.com/photo-1557821552-17105176677c?w=500&h=300&fit=crop",
-            description: "Modern online shopping experience"
+            description: t.portfolioDesc[0] // Ambil dari dictionary
         },
         {
-            title: "Banking App",
+            title: "Aplikasi Kasir UMKM",
             category: "Mobile App",
             image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&h=300&fit=crop",
-            description: "Secure financial management"
+            description: t.portfolioDesc[1]
         },
         {
-            title: "Brand Identity",
-            category: "Design",
-            image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=500&h=300&fit=crop",
-            description: "Complete branding solution"
-        },
-        {
-            title: "Food Delivery App",
-            category: "Mobile App",
-            image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&h=300&fit=crop",
-            description: "Seamless ordering experience"
-        },
-        {
-            title: "SaaS Dashboard",
-            category: "Web Development",
-            image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=300&fit=crop",
-            description: "Analytics and insights platform"
-        },
-        {
-            title: "Travel Website",
-            category: "Design",
+            title: "Company Profile BUMN",
+            category: "Frontend",
             image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=500&h=300&fit=crop",
-            description: "Inspiring wanderlust"
+            description: t.portfolioDesc[2]
         }
     ];
 
-    const scrollToSection = (section: string) => {
-        setActiveSection(section);
-        setIsMenuOpen(false);
-    };
+    const certificates = [
+        { title: "AWS Cloud Practitioner", org: "Amazon Web Services", date: "2024" },
+        { title: "Frontend Developer Expert", org: "Dicoding Indonesia", date: "2023" },
+        { title: "Google UX Design", org: "Coursera", date: "2023" },
+    ];
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* Navigation */}
-            <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md shadow-sm z-50 transition-all duration-300">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16 lg:h-20">
-                        {/* Logo */}
-                        <div className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
-                            EasyFolio
-                        </div>
-
-                        {/* Desktop Menu */}
-                        <div className="hidden lg:flex items-center gap-8">
-                            {['Home', 'About', 'Resume', 'Portfolio', 'Services', 'Contact'].map((item) => (
-                                <button
-                                    key={item}
-                                    onClick={() => scrollToSection(item.toLowerCase())}
-                                    className={`text-sm font-medium transition-colors hover:text-orange-500 ${activeSection === item.toLowerCase() ? 'text-orange-500' : 'text-slate-700'
-                                        }`}
-                                >
-                                    {item}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Social Icons - Desktop */}
-                        <div className="hidden lg:flex items-center gap-4">
-                            <button className="text-slate-600 hover:text-orange-500 transition-colors">
-                                <Twitter className="w-5 h-5" />
-                            </button>
-                            <button className="text-slate-600 hover:text-orange-500 transition-colors">
-                                <Github className="w-5 h-5" />
-                            </button>
-                            <button className="text-slate-600 hover:text-orange-500 transition-colors">
-                                <Linkedin className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="lg:hidden text-slate-700 hover:text-orange-500 transition-colors"
-                        >
-                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="lg:hidden bg-white border-t border-slate-200 animate-in slide-in-from-top duration-300">
-                        <div className="px-4 py-4 space-y-3">
-                            {['Home', 'About', 'Resume', 'Portfolio', 'Services', 'Contact'].map((item) => (
-                                <button
-                                    key={item}
-                                    onClick={() => scrollToSection(item.toLowerCase())}
-                                    className="block w-full text-left px-4 py-2 text-slate-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all"
-                                >
-                                    {item}
-                                </button>
-                            ))}
-                            <div className="flex gap-4 px-4 pt-4 border-t border-slate-200">
-                                <button className="text-slate-600 hover:text-orange-500 transition-colors">
-                                    <Twitter className="w-5 h-5" />
-                                </button>
-                                <button className="text-slate-600 hover:text-orange-500 transition-colors">
-                                    <Github className="w-5 h-5" />
-                                </button>
-                                <button className="text-slate-600 hover:text-orange-500 transition-colors">
-                                    <Linkedin className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </nav>
-
-            {/* Hero Section */}
-            <section className="pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-orange-50 to-slate-100">
+        <MainLayoutGuest>
+            {/* --- HERO SECTION --- */}
+            <section id="home" className="pt-20 pb-20 px-4 sm:px-6 lg:px-8 bg-linear-to-br from-slate-50 via-orange-50/30 to-white">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                        {/* Left Content */}
-                        <div className="space-y-6 lg:space-y-8 order-2 lg:order-1">
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-                                Crafting Digital<br />
-                                <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                                    Experiences with Passion
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                        <div className="space-y-8 order-2 lg:order-1 text-center lg:text-left">
+                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.15]">
+                                {t.hero.title1}<br />
+                                <span className="bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                                    {t.hero.title2}
                                 </span>
                             </h1>
-                            <p className="text-lg lg:text-xl text-slate-600 leading-relaxed">
-                                Transforming ideas into elegant solutions through creative design and innovative development
+                            <p className="text-lg lg:text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                                {t.hero.desc}
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Button className="h-12 px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                                    View My Work
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                                <Button className="h-12 px-8 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-lg">
+                                    {t.hero.btnWork}
                                 </Button>
-                                <Button variant="outline" className="h-12 px-8 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-medium transition-all duration-300">
-                                    Let's Connect
+                                <Button variant="outline" className="h-12 px-8 border-2 border-slate-200 text-slate-700 hover:border-orange-500 hover:text-orange-600 rounded-full">
+                                    {t.hero.btnConnect}
                                 </Button>
                             </div>
-
-                            {/* Stats */}
-                            <div className="grid grid-cols-3 gap-4 lg:gap-8 pt-8">
-                                <div className="text-center lg:text-left">
-                                    <div className="text-3xl lg:text-4xl font-bold text-slate-900">5+</div>
-                                    <div className="text-sm text-slate-600 mt-1">Years Experience</div>
-                                </div>
-                                <div className="text-center lg:text-left">
-                                    <div className="text-3xl lg:text-4xl font-bold text-slate-900">100+</div>
-                                    <div className="text-sm text-slate-600 mt-1">Projects Completed</div>
-                                </div>
-                                <div className="text-center lg:text-left">
-                                    <div className="text-3xl lg:text-4xl font-bold text-slate-900">50+</div>
-                                    <div className="text-sm text-slate-600 mt-1">Happy Clients</div>
-                                </div>
+                            <div className="grid grid-cols-3 gap-8 pt-8 border-t border-slate-200/60">
+                                <div><div className="text-3xl font-bold text-slate-900">2+</div><div className="text-xs text-slate-500 uppercase mt-1">{t.hero.stats.exp}</div></div>
+                                <div><div className="text-3xl font-bold text-slate-900">10+</div><div className="text-xs text-slate-500 uppercase mt-1">{t.hero.stats.proj}</div></div>
+                                <div><div className="text-3xl font-bold text-slate-900">5+</div><div className="text-xs text-slate-500 uppercase mt-1">{t.hero.stats.client}</div></div>
                             </div>
                         </div>
-
-                        {/* Right Image */}
-                        <div className="order-1 lg:order-2 relative">
-                            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 to-transparent z-10"></div>
-                                <img
-                                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop"
-                                    alt="Professional"
-                                    className="w-full h-full object-cover"
-                                />
+                        <div className="order-1 lg:order-2 flex justify-center">
+                            <div className="relative w-72 h-72 sm:w-96 sm:h-96 lg:w-[500px] lg:h-[500px]">
+                                <div className="absolute inset-0 bg-orange-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                                <div className="relative w-full h-full rounded-full overflow-hidden border-8 border-white shadow-2xl">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop" alt="Profile" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                                </div>
+                                <div className="absolute bottom-10 -left-4 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600"><Code className="w-5 h-5" /></div>
+                                    <div><p className="text-xs text-slate-500">Expert in</p><p className="font-bold text-slate-900">Frontend Dev</p></div>
+                                </div>
                             </div>
-                            {/* Decorative circles */}
-                            <div className="absolute -top-4 -right-4 w-24 h-24 bg-orange-200 rounded-full opacity-50 blur-2xl"></div>
-                            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-slate-200 rounded-full opacity-50 blur-2xl"></div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Services Section */}
-            <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white">
+            {/* --- PORTFOLIO SECTION --- */}
+            <section id="portfolio" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12 lg:mb-16">
-                        <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-                            What I Do
-                        </h2>
-                        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                            Specialized services tailored to bring your digital vision to life
-                        </p>
+                    <div className="text-center mb-16">
+                        <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block">Portofolio</span>
+                        <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">{t.titles.portfolio}</h2>
                     </div>
-
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-                        {services.map((service, index) => (
-                            <Card
-                                key={index}
-                                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-slate-50"
-                            >
-                                <CardContent className="p-6 lg:p-8">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                        {service.icon}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-3">
-                                        {service.title}
-                                    </h3>
-                                    <p className="text-slate-600 leading-relaxed">
-                                        {service.description}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Portfolio Section */}
-            <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-orange-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12 lg:mb-16">
-                        <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-                            Featured Work
-                        </h2>
-                        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                            A showcase of recent projects that demonstrate creativity and technical excellence
-                        </p>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {portfolio.map((project, index) => (
-                            <Card
-                                key={index}
-                                className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
-                            >
-                                <div className="relative overflow-hidden">
-                                    <img
-                                        src={project.image}
-                                        alt={project.title}
-                                        className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                                        <button className="text-white hover:text-orange-400 transition-colors">
-                                            <ExternalLink className="w-6 h-6" />
-                                        </button>
+                            <Card key={index} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 rounded-2xl bg-white">
+                                <div className="relative overflow-hidden h-64">
+                                    <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <Button variant="secondary" className="rounded-full gap-2">Lihat Detail <ExternalLink className="w-4 h-4" /></Button>
                                     </div>
                                 </div>
                                 <CardContent className="p-6">
-                                    <div className="text-sm text-orange-600 font-medium mb-2">
-                                        {project.category}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">
-                                        {project.title}
-                                    </h3>
-                                    <p className="text-slate-600">
-                                        {project.description}
-                                    </p>
+                                    <div className="text-xs font-bold text-orange-600 mb-2 uppercase tracking-wide">{project.category}</div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-orange-600 transition-colors">{project.title}</h3>
+                                    <p className="text-slate-500 text-sm leading-relaxed">{project.description}</p>
                                 </CardContent>
                             </Card>
                         ))}
                     </div>
-
-                    <div className="text-center mt-12">
-                        <Button className="h-12 px-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                            View All Projects
-                        </Button>
-                    </div>
                 </div>
             </section>
 
-            {/* Contact Section */}
-            <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-                        Let's Work Together
-                    </h2>
-                    <p className="text-lg text-slate-600 mb-8">
-                        Have a project in mind? Let's create something amazing together
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button className="h-14 px-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 text-lg">
-                            <Mail className="w-5 h-5 mr-2" />
-                            Get In Touch
-                        </Button>
-                        <Button variant="outline" className="h-14 px-10 border-2 border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-all duration-300 text-lg">
-                            Download Resume
-                        </Button>
-                    </div>
-                </div>
-            </section>
-
-            {/* Footer */}
-            <footer className="bg-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+            {/* --- CERTIFICATES SECTION --- */}
+            <section id="certificates" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div className="text-2xl font-bold">EasyFolio</div>
-                        <div className="flex gap-6">
-                            <button className="hover:text-orange-400 transition-colors">
-                                <Twitter className="w-6 h-6" />
-                            </button>
-                            <button className="hover:text-orange-400 transition-colors">
-                                <Github className="w-6 h-6" />
-                            </button>
-                            <button className="hover:text-orange-400 transition-colors">
-                                <Linkedin className="w-6 h-6" />
-                            </button>
-                            <button className="hover:text-orange-400 transition-colors">
-                                <Mail className="w-6 h-6" />
-                            </button>
-                        </div>
+                    <div className="text-center mb-16">
+                        <span className="text-orange-600 font-bold tracking-wider uppercase text-sm mb-2 block">Prestasi</span>
+                        <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">{t.titles.certificates}</h2>
                     </div>
-                    <div className="text-center mt-8 pt-8 border-t border-slate-800 text-slate-400">
-                        <p>© 2025 EasyFolio by Alisa. All rights reserved.</p>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {certificates.map((cert, index) => (
+                            <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-orange-200 transition-colors flex items-start gap-4">
+                                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 shrink-0"><Award className="w-6 h-6" /></div>
+                                <div>
+                                    <h4 className="font-bold text-slate-900 line-clamp-2">{cert.title}</h4>
+                                    <p className="text-sm text-slate-500 mt-1">{cert.org}</p>
+                                    <p className="text-xs text-slate-400 mt-2 font-mono">{cert.date}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
-            </footer>
+            </section>
 
-            <style jsx>{`
-        @keyframes slide-in-from-top {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-in {
-          animation: slide-in-from-top 0.3s ease-out;
-        }
-      `}</style>
-        </div>
+            {/* --- CONTACT SECTION --- */}
+            <section id="contact" className="py-24 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full bg-slate-50 -skew-y-3 origin-top-left -z-10 transform scale-110"></div>
+                <div className="max-w-4xl mx-auto text-center relative z-10">
+                    <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">{t.titles.contact}</h2>
+                    <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto">{t.contactDesc}</p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button className="h-14 px-10 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full text-lg gap-3">
+                            <Mail className="w-5 h-5" /> Kirim Email
+                        </Button>
+                        <Button variant="outline" className="h-14 px-10 border-2 border-slate-200 text-slate-700 hover:border-slate-900 hover:bg-transparent font-medium transition-all duration-300 rounded-full text-lg">
+                            WhatsApp
+                        </Button>
+                    </div>
+                </div>
+            </section>
+        </MainLayoutGuest>
+    );
+}
+
+// Komponen Utama yang diexport Next.js
+export default function LandingPageGuest() {
+    return (
+        <LanguageProvider>
+            <LandingPageContent />
+        </LanguageProvider>
     );
 }
