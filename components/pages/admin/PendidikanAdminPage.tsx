@@ -1,45 +1,39 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-    Plus,
-    Edit,
-    Trash2,
-    MapPin,
-    Calendar,
-    ChevronLeft,
-    ChevronRight,
-    BookOpen,
-    Trophy,
-    Clock,
-    Building2,
-    GraduationCap,
-    Search,
-    Filter,
-    X
+    Plus, Edit, Trash2, MapPin, Calendar, ChevronLeft, ChevronRight,
+    BookOpen, Trophy, Clock, Building2, GraduationCap, Search, Filter, X, Loader2
 } from 'lucide-react';
 import MainLayoutAdmin from '@/components/layout/MainLayoutAdmin';
+import supabase from '@/lib/db';
+import toast from 'react-hot-toast';
 
-// Definisi Tipe Data
+// 1. Interface Sesuai Tabel Database 'educations'
 interface Education {
-    id: number;
-    degree: string;
-    major: string;
-    institution: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    gpa: string;
-    status: string;
-    description: string;
-    achievements: string[];
+    id: string;
+    tempat_pendidikan: string;
+    gelar: string;
+    bidang_studi: string;
+    periode: string;
+    nilai: string;
+    deskripsi: string;
+    keahlian_pendidikan: string; // Disimpan sebagai text string (pisahkan koma)
+    link_institusi: string;
+    created_at: string;
 }
 
 export default function PendidikanAdminPage() {
+    // --- STATE UTAMA ---
+    const [educationData, setEducationData] = useState<Education[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // --- STATE UI ---
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -51,117 +45,86 @@ export default function PendidikanAdminPage() {
 
     const itemsPerPage = 5;
 
-    // Dummy Data
-    const [educationData, setEducationData] = useState<Education[]>([
-        {
-            id: 1,
-            degree: 'Master of Computer Science',
-            major: 'Artificial Intelligence',
-            institution: 'Stanford University',
-            location: 'Stanford, California, USA',
-            startDate: '2020-09',
-            endDate: '2022-06',
-            gpa: '3.95',
-            status: 'Graduated',
-            description: 'Focused on machine learning, deep learning, and natural language processing. Thesis on neural network optimization.',
-            achievements: ['Best Thesis Award', 'Dean\'s List']
-        },
-        {
-            id: 2,
-            degree: 'Bachelor of Computer Science',
-            major: 'Software Engineering',
-            institution: 'Massachusetts Institute of Technology',
-            location: 'Cambridge, Massachusetts, USA',
-            startDate: '2016-09',
-            endDate: '2020-06',
-            gpa: '3.88',
-            status: 'Graduated',
-            description: 'Comprehensive study of software development, algorithms, and system design. Capstone project on distributed systems.',
-            achievements: ['Summa Cum Laude', 'Programming Competition Winner']
-        },
-        {
-            id: 3,
-            degree: 'High School Diploma',
-            major: 'Science',
-            institution: 'Jakarta International School',
-            location: 'Jakarta, Indonesia',
-            startDate: '2013-07',
-            endDate: '2016-06',
-            gpa: '3.92',
-            status: 'Graduated',
-            description: 'Specialized in Mathematics, Physics, and Computer Science. Active member of robotics club.',
-            achievements: ['Valedictorian', 'National Science Olympiad Gold Medal']
-        },
-        {
-            id: 4,
-            degree: 'Online Certification',
-            major: 'Full Stack Web Development',
-            institution: 'Coursera - Meta',
-            location: 'Online',
-            startDate: '2023-01',
-            endDate: '2023-06',
-            gpa: 'N/A',
-            status: 'Completed',
-            description: 'Comprehensive program covering React, Node.js, databases, and deployment strategies.',
-            achievements: ['Professional Certificate']
-        },
-    ]);
+    // 2. FETCH DATA DARI SUPABASE
+    const fetchEducation = async () => {
+        setIsLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
 
-    // Logic Filtering & Pagination
+            const { data, error } = await supabase
+                .from('educations')
+                .select('*')
+                .eq('admin_id', user.id)
+                .order('created_at', { ascending: false }); // Urutkan dari yang terbaru dibuat
+
+            if (error) throw error;
+            setEducationData(data || []);
+        } catch (error: any) {
+            console.error('Error fetching education:', error);
+            toast.error('Gagal memuat data pendidikan.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEducation();
+    }, []);
+
+    // 3. LOGIK FILTERING (SEARCH)
     const filteredEducation = educationData.filter(edu =>
-        edu.degree.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        edu.institution.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        edu.major.toLowerCase().includes(searchQuery.toLowerCase())
+        edu.gelar?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        edu.tempat_pendidikan?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        edu.bidang_studi?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // 4. LOGIK PAGINATION
     const totalPages = Math.ceil(filteredEducation.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentEducation = filteredEducation.slice(startIndex, startIndex + itemsPerPage);
 
-    // Helper Functions
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    // 5. HELPER: Warna Badge Status (Simulasi logika sederhana)
+    const getStatusColor = (periode: string) => {
+        if (!periode) return 'bg-slate-100 text-slate-700 border-slate-200';
+        const lower = periode.toLowerCase();
+        if (lower.includes('sekarang') || lower.includes('present')) return 'bg-orange-100 text-orange-700 border-orange-200'; // Sedang berjalan
+        return 'bg-green-100 text-green-700 border-green-200'; // Selesai
     };
 
-    const calculateDuration = (start: string, end: string) => {
-        const startDate = new Date(start);
-        const endDate = new Date(end);
-        const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-        const years = Math.floor(months / 12);
-        const remainingMonths = months % 12;
-
-        if (years > 0 && remainingMonths > 0) return `${years} yr ${remainingMonths} mo`;
-        if (years > 0) return `${years} years`;
-        return `${remainingMonths} months`;
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Graduated': return 'bg-green-100 text-green-700 border-green-200';
-            case 'Completed': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'In Progress': return 'bg-orange-100 text-orange-700 border-orange-200';
-            default: return 'bg-slate-100 text-slate-700 border-slate-200';
-        }
-    };
-
-    // Handlers
-    const handleEdit = (edu: Education) => {
-        setSelectedEdu(edu);
-        setShowEditModal(true);
-    };
-
+    // 6. HANDLER DELETE (Langsung diaktifkan)
     const handleDelete = (edu: Education) => {
         setSelectedEdu(edu);
         setShowDeleteAlert(true);
     };
 
-    const confirmDelete = () => {
-        if (selectedEdu) {
-            setEducationData(educationData.filter(item => item.id !== selectedEdu.id));
+    const confirmDelete = async () => {
+        if (!selectedEdu) return;
+        setIsDeleting(true);
+        try {
+            const { error } = await supabase
+                .from('educations')
+                .delete()
+                .eq('id', selectedEdu.id);
+
+            if (error) throw error;
+
+            toast.success("Data pendidikan berhasil dihapus");
+            fetchEducation(); // Refresh data
+        } catch (error: any) {
+            toast.error("Gagal menghapus: " + error.message);
+        } finally {
+            setIsDeleting(false);
             setShowDeleteAlert(false);
             setSelectedEdu(null);
         }
+    };
+
+    // Placeholder Handlers untuk Add/Edit (Nanti diimplementasikan)
+    const handleEdit = (edu: Education) => {
+        setSelectedEdu(edu);
+        setShowEditModal(true);
+        // Nanti isi form disini
     };
 
     return (
@@ -169,19 +132,17 @@ export default function PendidikanAdminPage() {
 
             {/* --- ACTION BAR --- */}
             <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                {/* Search */}
                 <div className="relative flex-1 max-w-md w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <Input
                         type="text"
-                        placeholder="Cari pendidikan, gelar, atau kampus..."
+                        placeholder="Cari gelar, jurusan, atau kampus..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                         className="pl-10 h-11 border-slate-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl"
                     />
                 </div>
 
-                {/* Buttons */}
                 <div className="flex gap-3 w-full sm:w-auto">
                     <Button variant="outline" className="flex-1 sm:flex-none border-slate-200 text-slate-700 rounded-xl">
                         <Filter className="w-4 h-4 mr-2" /> Filter
@@ -199,10 +160,11 @@ export default function PendidikanAdminPage() {
             {/* --- STATS SUMMARY --- */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                    { label: 'Total', value: educationData.length, icon: <GraduationCap className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-100' },
-                    { label: 'Degrees', value: '2', icon: <Trophy className="w-5 h-5 text-green-600" />, bg: 'bg-green-100' },
-                    { label: 'Courses', value: '2', icon: <BookOpen className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-100' },
-                    { label: 'Institutions', value: '3', icon: <Building2 className="w-5 h-5 text-orange-600" />, bg: 'bg-orange-100' },
+                    { label: 'Total Riwayat', value: educationData.length, icon: <GraduationCap className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-100' },
+                    // Hitung unik institusi
+                    { label: 'Institusi', value: new Set(educationData.map(e => e.tempat_pendidikan)).size, icon: <Building2 className="w-5 h-5 text-orange-600" />, bg: 'bg-orange-100' },
+                    { label: 'Gelar', value: new Set(educationData.map(e => e.gelar)).size, icon: <Trophy className="w-5 h-5 text-green-600" />, bg: 'bg-green-100' },
+                    { label: 'Status', value: 'Active', icon: <BookOpen className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-100' },
                 ].map((stat, index) => (
                     <Card key={index} className="border-0 shadow-md">
                         <CardContent className="p-4">
@@ -220,125 +182,149 @@ export default function PendidikanAdminPage() {
                 ))}
             </div>
 
-            {/* --- TIMELINE LIST --- */}
-            <div className="space-y-6 mb-6">
-                {currentEducation.map((edu) => (
-                    <Card
-                        key={edu.id}
-                        className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                    >
-                        <div className="relative">
-                            {/* Timeline Indicator Strip */}
-                            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-linear-to-b from-orange-500 to-orange-600"></div>
+            {/* --- CONTENT AREA --- */}
+            {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                    <Loader2 className="w-10 h-10 text-orange-500 animate-spin mb-4" />
+                    <p className="text-slate-500">Memuat riwayat pendidikan...</p>
+                </div>
+            ) : filteredEducation.length > 0 ? (
+                // --- TIMELINE LIST ---
+                <div className="space-y-6 mb-6">
+                    {currentEducation.map((edu) => (
+                        <Card
+                            key={edu.id}
+                            className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                        >
+                            <div className="relative">
+                                {/* Timeline Indicator Strip */}
+                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-linear-to-b from-orange-500 to-orange-600"></div>
 
-                            <CardContent className="p-6 pl-8">
-                                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                                    {/* Left Content */}
-                                    <div className="flex-1 space-y-4">
+                                <CardContent className="p-6 pl-8">
+                                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                        {/* Left Content */}
+                                        <div className="flex-1 space-y-4">
 
-                                        {/* Header: Icon & Title */}
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <div className="w-12 h-12 bg-linear-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
-                                                        <GraduationCap className="w-6 h-6" />
+                                            {/* Header: Icon & Title */}
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <div className="w-12 h-12 bg-linear-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform shrink-0">
+                                                            <GraduationCap className="w-6 h-6" />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
+                                                                {edu.gelar}
+                                                            </h3>
+                                                            <p className="text-sm font-medium text-orange-600">{edu.bidang_studi}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
-                                                            {edu.degree}
-                                                        </h3>
-                                                        <p className="text-sm font-medium text-orange-600">{edu.major}</p>
-                                                    </div>
-                                                </div>
 
-                                                <div className="flex items-center gap-2 text-slate-700 mb-2">
-                                                    <Building2 className="w-4 h-4 text-slate-500" />
-                                                    <span className="font-medium">{edu.institution}</span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 text-slate-600 mb-3">
-                                                    <MapPin className="w-4 h-4 text-slate-500" />
-                                                    <span className="text-sm">{edu.location}</span>
-                                                </div>
-
-                                                {/* Metadata: Date, Duration, GPA */}
-                                                <div className="flex flex-wrap items-center gap-4 text-sm mb-3">
-                                                    <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1 rounded-md">
-                                                        <Calendar className="w-4 h-4 text-slate-500" />
-                                                        <span>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</span>
+                                                    <div className="flex items-center gap-2 text-slate-700 mb-2">
+                                                        <Building2 className="w-4 h-4 text-slate-500" />
+                                                        <span className="font-medium">{edu.tempat_pendidikan}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1 rounded-md">
-                                                        <Clock className="w-4 h-4 text-slate-500" />
-                                                        <span>{calculateDuration(edu.startDate, edu.endDate)}</span>
+
+                                                    {/* Metadata: Date, GPA */}
+                                                    <div className="flex flex-wrap items-center gap-4 text-sm mb-3">
+                                                        <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                                                            <Calendar className="w-4 h-4 text-slate-500" />
+                                                            <span>{edu.periode}</span>
+                                                        </div>
+
+                                                        {edu.nilai && (
+                                                            <div className="flex items-center gap-2 bg-yellow-50 px-2 py-1 rounded-md border border-yellow-100">
+                                                                <Trophy className="w-4 h-4 text-yellow-600" />
+                                                                <span className="font-medium text-yellow-700">Nilai: {edu.nilai}</span>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Status Badge berdasarkan periode */}
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(edu.periode)}`}>
+                                                            {edu.periode.toLowerCase().includes('sekarang') ? 'Sedang Berjalan' : 'Selesai'}
+                                                        </span>
                                                     </div>
-                                                    {edu.gpa !== 'N/A' && (
-                                                        <div className="flex items-center gap-2 bg-yellow-50 px-2 py-1 rounded-md border border-yellow-100">
-                                                            <Trophy className="w-4 h-4 text-yellow-600" />
-                                                            <span className="font-medium text-yellow-700">GPA: {edu.gpa}</span>
+
+                                                    {/* Description */}
+                                                    {edu.deskripsi && (
+                                                        <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                                                            {edu.deskripsi}
+                                                        </p>
+                                                    )}
+
+                                                    {/* Achievements Tags / Keahlian */}
+                                                    {edu.keahlian_pendidikan && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {edu.keahlian_pendidikan.split(',').map((skill, i) => (
+                                                                <span
+                                                                    key={i}
+                                                                    className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-[10px] font-medium border border-orange-100"
+                                                                >
+                                                                    <BookOpen className="w-3 h-3" />
+                                                                    {skill.trim()}
+                                                                </span>
+                                                            ))}
                                                         </div>
                                                     )}
                                                 </div>
-
-                                                {/* Status Badge */}
-                                                <div className="mb-3">
-                                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(edu.status)}`}>
-                                                        {edu.status}
-                                                    </span>
-                                                </div>
-
-                                                {/* Description */}
-                                                <p className="text-sm text-slate-600 leading-relaxed mb-3">
-                                                    {edu.description}
-                                                </p>
-
-                                                {/* Achievements Tags */}
-                                                {edu.achievements && edu.achievements.length > 0 && (
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {edu.achievements.map((achievement, i) => (
-                                                            <span
-                                                                key={i}
-                                                                className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-medium border border-orange-100"
-                                                            >
-                                                                <Trophy className="w-3 h-3" />
-                                                                {achievement}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="flex lg:flex-col gap-2 lg:ml-4">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="flex-1 lg:flex-none border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg"
-                                            onClick={() => handleEdit(edu)}
-                                        >
-                                            <Edit className="w-4 h-4 lg:mr-2" />
-                                            <span className="hidden lg:inline">Edit</span>
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="flex-1 lg:flex-none border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg"
-                                            onClick={() => handleDelete(edu)}
-                                        >
-                                            <Trash2 className="w-4 h-4 lg:mr-2" />
-                                            <span className="hidden lg:inline">Delete</span>
-                                        </Button>
+                                        {/* Action Buttons */}
+                                        <div className="flex lg:flex-col gap-2 lg:ml-4 border-t lg:border-t-0 pt-4 lg:pt-0 mt-2 lg:mt-0">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex-1 lg:flex-none border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg"
+                                                onClick={() => handleEdit(edu)}
+                                            >
+                                                <Edit className="w-4 h-4 lg:mr-2" />
+                                                <span className="hidden lg:inline">Edit</span>
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex-1 lg:flex-none border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg"
+                                                onClick={() => handleDelete(edu)}
+                                            >
+                                                <Trash2 className="w-4 h-4 lg:mr-2" />
+                                                <span className="hidden lg:inline">Delete</span>
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </div>
-                    </Card>
-                ))}
-            </div>
+                                </CardContent>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                // --- EMPTY STATE ---
+                <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed mb-6">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        {searchQuery ? <Search className="w-8 h-8 text-slate-300" /> : <GraduationCap className="w-8 h-8 text-slate-300" />}
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                        {searchQuery ? 'Tidak ditemukan' : 'Belum ada data pendidikan'}
+                    </h3>
+                    <p className="text-slate-500 mb-6">
+                        {searchQuery
+                            ? `Tidak ada hasil untuk "${searchQuery}"`
+                            : 'Tambahkan riwayat pendidikan, sekolah, atau kursus Anda di sini.'}
+                    </p>
+                    {!searchQuery && (
+                        <Button
+                            onClick={() => setShowAddModal(true)}
+                            className="bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-xl shadow-lg hover:shadow-xl"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Tambah Pendidikan Pertama
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {/* --- PAGINATION --- */}
-            {totalPages > 1 && (
+            {!isLoading && filteredEducation.length > itemsPerPage && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-slate-600">
                         Menampilkan {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredEducation.length)} dari {filteredEducation.length} data
@@ -361,8 +347,8 @@ export default function PendidikanAdminPage() {
                                     key={i}
                                     onClick={() => setCurrentPage(i + 1)}
                                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${currentPage === i + 1
-                                            ? 'bg-linear-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                        ? 'bg-linear-to-r from-orange-500 to-orange-600 text-white shadow-lg'
+                                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                                         }`}
                                 >
                                     {i + 1}
@@ -395,14 +381,18 @@ export default function PendidikanAdminPage() {
                         </CardHeader>
                         <CardContent className="p-6">
                             <p className="text-slate-600 mb-6">
-                                Apakah Anda yakin ingin menghapus <strong>"{selectedEdu?.degree}"</strong> di <strong>{selectedEdu?.institution}</strong>? Tindakan ini tidak dapat dibatalkan.
+                                Apakah Anda yakin ingin menghapus <strong>"{selectedEdu?.gelar}"</strong> di <strong>"{selectedEdu?.tempat_pendidikan}"</strong>? Tindakan ini tidak dapat dibatalkan.
                             </p>
                             <div className="flex gap-3">
                                 <Button variant="outline" className="flex-1 border-slate-200 rounded-xl" onClick={() => setShowDeleteAlert(false)}>
                                     Batal
                                 </Button>
-                                <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl" onClick={confirmDelete}>
-                                    Hapus
+                                <Button
+                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Hapus'}
                                 </Button>
                             </div>
                         </CardContent>
@@ -410,7 +400,7 @@ export default function PendidikanAdminPage() {
                 </div>
             )}
 
-            {/* --- MODAL ADD / EDIT --- */}
+            {/* --- MODAL ADD / EDIT (Placeholder visual saja, belum fungsional untuk update/insert) --- */}
             {(showAddModal || showEditModal) && (
                 <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm animate-in fade-in duration-200">
                     <Card className="w-full max-w-2xl border-0 shadow-2xl my-8 scale-100 animate-in zoom-in-95 duration-200">
@@ -424,71 +414,9 @@ export default function PendidikanAdminPage() {
                             </button>
                         </CardHeader>
                         <CardContent className="p-6">
-                            <div className="space-y-4">
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <Label htmlFor="degree">Gelar / Program *</Label>
-                                        <Input id="degree" placeholder="Contoh: Sarjana Komputer" className="mt-1 rounded-xl" />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="major">Jurusan / Bidang Studi *</Label>
-                                        <Input id="major" placeholder="Contoh: Teknik Informatika" className="mt-1 rounded-xl" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label htmlFor="institution">Institusi / Kampus *</Label>
-                                    <Input id="institution" placeholder="Contoh: Universitas Indonesia" className="mt-1 rounded-xl" />
-                                </div>
-                                <div>
-                                    <Label htmlFor="location">Lokasi *</Label>
-                                    <Input id="location" placeholder="Contoh: Depok, Indonesia" className="mt-1 rounded-xl" />
-                                </div>
-                                <div className="grid sm:grid-cols-3 gap-4">
-                                    <div>
-                                        <Label htmlFor="startDate">Mulai *</Label>
-                                        <Input id="startDate" type="month" className="mt-1 rounded-xl" />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="endDate">Selesai *</Label>
-                                        <Input id="endDate" type="month" className="mt-1 rounded-xl" />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="gpa">IPK / GPA (Opsional)</Label>
-                                        <Input id="gpa" placeholder="Contoh: 3.85" className="mt-1 rounded-xl" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label htmlFor="description">Deskripsi</Label>
-                                    <textarea
-                                        id="description"
-                                        rows={3}
-                                        placeholder="Jelaskan fokus studi, tesis, atau hal penting lainnya..."
-                                        className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="achievements">Pencapaian (Pisahkan dengan koma)</Label>
-                                    <Input id="achievements" placeholder="Contoh: Cum Laude, Ketua BEM, Juara 1 Hackathon" className="mt-1 rounded-xl" />
-                                </div>
-                            </div>
-                            <div className="flex gap-3 mt-6">
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 border-slate-200 rounded-xl"
-                                    onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
-                                >
-                                    Batal
-                                </Button>
-                                <Button
-                                    className="flex-1 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl"
-                                    onClick={() => {
-                                        alert('Data berhasil disimpan!');
-                                        setShowAddModal(false);
-                                        setShowEditModal(false);
-                                    }}
-                                >
-                                    Simpan Data
-                                </Button>
+                            <div className="text-center py-10">
+                                <p className="text-slate-500">Form Add/Edit akan kita aktifkan pada langkah selanjutnya.</p>
+                                <Button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} className="mt-4">Tutup</Button>
                             </div>
                         </CardContent>
                     </Card>
