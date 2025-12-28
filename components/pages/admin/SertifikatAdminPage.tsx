@@ -52,6 +52,11 @@ export default function SertifikatAdminPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // State khusus edit
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [editingCert, setEditingCert] = useState<any>(null)
+
+
     const itemsPerPage = 6;
 
     // 1. FETCH DATA
@@ -244,6 +249,83 @@ export default function SertifikatAdminPage() {
         }
     };
 
+    // Hendle edit
+    const handleEditClick = (cert: any) => {
+        setEditingCert(cert)
+
+        setFormData({
+            nama_sertifikat: cert.nama_sertifikat,
+            organisasi_sertifikat: cert.organisasi_sertifikat,
+            periode_sertifikat: cert.periode_sertifikat || '',
+            no_sertifikat: cert.no_sertifikat || '',
+            link_organisasi: cert.link_organisasi || '',
+        })
+
+        setPreviewUrl(cert.foto_sertifikat || null)
+        setSelectedFile(null)
+
+        setShowEditModal(true)
+    }
+
+    // Handle Upadet
+    const handleUpdate = async () => {
+        if (!editingCert) return
+
+        setIsSaving(true)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error('Sesi habis')
+
+            let finalImageUrl = previewUrl
+
+            // 🔥 JIKA USER PILIH GAMBAR BARU
+            if (selectedFile) {
+                const fileExt = selectedFile.name.split('.').pop()
+                const fileName = `${user.id}-${Date.now()}.${fileExt}`
+
+                // Upload ke storage
+                const { error: uploadError } = await supabase.storage
+                    .from('certificates')
+                    .upload(fileName, selectedFile)
+
+                if (uploadError) throw uploadError
+
+                // Ambil public URL
+                const { data } = supabase.storage
+                    .from('certificates')
+                    .getPublicUrl(fileName)
+
+                finalImageUrl = data.publicUrl
+            }
+
+            // 🔥 UPDATE DATABASE
+            const { error } = await supabase
+                .from('certificates') // ⬅️ PERBAIKAN NAMA TABEL
+                .update({
+                    nama_sertifikat: formData.nama_sertifikat,
+                    organisasi_sertifikat: formData.organisasi_sertifikat,
+                    periode_sertifikat: formData.periode_sertifikat,
+                    no_sertifikat: formData.no_sertifikat,
+                    link_organisasi: formData.link_organisasi,
+                    foto_sertifikat: finalImageUrl,
+                })
+                .eq('id', editingCert.id)
+
+            if (error) throw error
+
+            toast.success('Sertifikat berhasil diperbarui ✨')
+            setShowEditModal(false)
+            resetForm()
+            fetchCertificates()
+
+        } catch (error: any) {
+            console.error(error)
+            toast.error('Gagal update: ' + error.message)
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
     return (
         <MainLayoutAdmin>
 
@@ -335,7 +417,15 @@ export default function SertifikatAdminPage() {
                                 <div className="pt-4 border-t border-slate-100 mt-auto">
                                     <p className="text-xs text-slate-500 mb-3 font-mono truncate">No: {cert.no_sertifikat || '-'}</p>
                                     <div className="flex gap-2">
-                                        <Button size="sm" variant="outline" className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg"><Edit className="w-3 h-3 mr-1" />Edit</Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg"
+                                            onClick={() => handleEditClick(cert)}
+                                        >
+                                            <Edit className="w-3 h-3 mr-1" />
+                                            Edit
+                                        </Button>
                                         <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg" onClick={() => handleDeleteClick(cert)}><Trash2 className="w-3 h-3 mr-1" />Delete</Button>
                                     </div>
                                 </div>
@@ -456,6 +546,116 @@ export default function SertifikatAdminPage() {
                                 {isDeleting ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : 'Ya, Hapus'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Edit */}
+            {showEditModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-slate-900">
+                                Edit Sertifikat
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setShowEditModal(false)
+                                    resetForm()
+                                }}
+                                className="text-slate-400 hover:text-slate-700"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Form (SAMA DENGAN TAMBAH) */}
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Nama Sertifikat</Label>
+                                <Input
+                                    value={formData.nama_sertifikat}
+                                    onChange={handleInputChange}
+                                    id="nama_sertifikat"
+                                    className="rounded-xl"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Penerbit</Label>
+                                <Input
+                                    value={formData.organisasi_sertifikat}
+                                    onChange={handleInputChange}
+                                    id="organisasi_sertifikat"
+                                    className="rounded-xl"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Periode</Label>
+                                    <Input
+                                        value={formData.periode_sertifikat}
+                                        onChange={handleInputChange}
+                                        id="periode_sertifikat"
+                                        className="rounded-xl"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>No Sertifikat</Label>
+                                    <Input
+                                        value={formData.no_sertifikat}
+                                        onChange={handleInputChange}
+                                        id="no_sertifikat"
+                                        className="rounded-xl"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Upload Gambar */}
+                            <div className="space-y-2">
+                                <Label>Gambar Sertifikat</Label>
+                                <div
+                                    className={`border-2 border-dashed rounded-xl p-6 flex justify-center cursor-pointer ${previewUrl ? 'border-orange-500 bg-orange-50' : 'border-slate-200'
+                                        }`}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    {previewUrl ? (
+                                        <img src={previewUrl} className="h-32 object-contain" />
+                                    ) : (
+                                        <UploadCloud className="w-10 h-10 text-slate-400" />
+                                    )}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex gap-3 mt-8">
+                            <Button
+                                variant="outline"
+                                className="flex-1 rounded-xl"
+                                onClick={() => setShowEditModal(false)}
+                            >
+                                Batal
+                            </Button>
+
+                            <Button
+                                className="flex-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-xl"
+                                onClick={handleUpdate}
+                            >
+                                Simpan Perubahan
                             </Button>
                         </div>
                     </div>
