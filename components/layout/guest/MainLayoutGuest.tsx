@@ -31,7 +31,7 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                     <div className="flex justify-between items-center h-24">
 
                         {/* Logo */}
-                        <div className="flex-shrink-0 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
+                        <div className="shrink-0 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
                             <img
                                 src="/img/logo.png"
                                 alt="Logo"
@@ -100,7 +100,7 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
             </nav>
 
             {/* --- MAIN CONTENT (Disini halaman akan dirender) --- */}
-            <main className="flex-grow pt-24">
+            <main className="grow pt-24">
                 {children}
             </main>
 

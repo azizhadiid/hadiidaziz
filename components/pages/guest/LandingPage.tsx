@@ -1,11 +1,12 @@
 'use client'
 
 import React from 'react';
-import { Mail, ExternalLink, Code, Award } from 'lucide-react';
+import { Mail, ExternalLink, Code, Award, Briefcase } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LanguageProvider, useLanguage } from '@/components/contexts/LanguageContext';
 import MainLayoutGuest from '@/components/layout/guest/MainLayoutGuest';
+import Link from 'next/link';
 
 // Kita pisahkan konten ke komponen terpisah agar bisa pakai hook useLanguage
 function LandingPageContent() {
@@ -56,11 +57,15 @@ function LandingPageContent() {
                                 {t.hero.desc}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                                <Button className="h-12 px-8 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-lg">
-                                    {t.hero.btnWork}
+                                <Button asChild className="h-12 px-8 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-lg">
+                                    <Link href="/portofolio">
+                                        {t.hero.btnWork}
+                                    </Link>
                                 </Button>
-                                <Button variant="outline" className="h-12 px-8 border-2 border-slate-200 text-slate-700 hover:border-orange-500 hover:text-orange-600 rounded-full">
-                                    {t.hero.btnConnect}
+                                <Button asChild variant="outline" className="h-12 px-8 border-2 border-slate-200 text-slate-700 hover:border-orange-500 hover:text-orange-600 rounded-full">
+                                    <Link href="/kontak">
+                                        {t.hero.btnConnect}
+                                    </Link>
                                 </Button>
                             </div>
                             <div className="grid grid-cols-3 gap-8 pt-8 border-t border-slate-200/60">
@@ -70,15 +75,45 @@ function LandingPageContent() {
                             </div>
                         </div>
                         <div className="order-1 lg:order-2 flex justify-center">
-                            <div className="relative w-72 h-72 sm:w-96 sm:h-96 lg:w-[500px] lg:h-[500px]">
-                                <div className="absolute inset-0 bg-orange-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                            <div className="relative w-72 h-72 sm:w-96 sm:h-96 lg:w-125 lg:h-125">
+                                <div className="absolute inset-0 rounded-full ring-0 hover:ring-8 hover:ring-orange-300/40 transition-all duration-500"></div>
+                                {/* Foto Profile */}
                                 <div className="relative w-full h-full rounded-full overflow-hidden border-8 border-white shadow-2xl">
-                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop" alt="Profile" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                                    <div className="w-full h-full rounded-full overflow-hidden border-8 border-white shadow-2xl bg-white">
+                                        <img
+                                            src="/img/Profile.jpg"
+                                            alt="Profile"
+                                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-700 ease-out"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="absolute bottom-10 -left-4 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+
+                                {/* Experience */}
+                                <div className="absolute bottom-10 -left-4 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-1000 animate-float">
                                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600"><Code className="w-5 h-5" /></div>
-                                    <div><p className="text-xs text-slate-500">Expert in</p><p className="font-bold text-slate-900">Frontend Dev</p></div>
+                                    <div>
+                                        <p className="text-xs text-slate-500">Specialized as</p>
+                                        <p className="font-bold text-slate-900">Full-Stack Developer</p>
+                                    </div>
                                 </div>
+
+                                {/* Floating badge - Experience */}
+                                <div className="absolute top-12 -right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-float">
+                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                        <Briefcase className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500">Experience</p>
+                                        <p className="font-bold text-slate-900">3+ Years</p>
+                                    </div>
+                                </div>
+
+                                <div className="absolute top-6 left-6 bg-white px-3 py-1 rounded-full shadow-lg flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                    <p className="text-xs font-medium text-slate-700">Available for work</p>
+                                </div>
+
+
                             </div>
                         </div>
                     </div>
@@ -150,7 +185,7 @@ function LandingPageContent() {
                     </div>
                 </div>
             </section>
-        </MainLayoutGuest>
+        </MainLayoutGuest >
     );
 }
 
