@@ -133,6 +133,34 @@ with check (
 
 
 -- ///////////////////////////// Tabel Portofolio
+-- 1. Membuat Bucket untuk Gambar Portfolio
+insert into storage.buckets (id, name, public)
+values ('portfolio_images', 'portfolio_images', true);
+
+-- 2. Mengatur Policy Storage (Agar gambar bisa dilihat publik & diupload admin)
+
+-- a. Siapa saja boleh MELIHAT gambar (untuk ditampilkan di web)
+create policy "Portfolio images are publicly accessible"
+on storage.objects for select
+using ( bucket_id = 'portfolio_images' );
+
+-- b. Hanya Admin (Authenticated) yang boleh UPLOAD
+create policy "Admin can upload portfolio images"
+on storage.objects for insert
+with check (
+  bucket_id = 'portfolio_images' 
+  and auth.role() = 'authenticated'
+);
+
+-- c. Hanya Admin yang boleh UPDATE/DELETE gambarnya
+create policy "Admin can update own portfolio images"
+on storage.objects for update
+using ( bucket_id = 'portfolio_images' and auth.uid() = owner );
+
+create policy "Admin can delete own portfolio images"
+on storage.objects for delete
+using ( bucket_id = 'portfolio_images' and auth.uid() = owner );
+
 -- 1. Tabel Portfolio
 create table public.portfolios (
   id uuid default gen_random_uuid() primary key,
