@@ -33,7 +33,7 @@ export default function PendidikanAdminPage() {
     // --- STATE UTAMA ---
     const [educationData, setEducationData] = useState<Education[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false); // Loading saat simpan
+    const [isSaving, setIsSaving] = useState(false); // Loading saat simpan/update
     const [isDeleting, setIsDeleting] = useState(false);
 
     // --- STATE UI ---
@@ -109,9 +109,8 @@ export default function PendidikanAdminPage() {
 
     // 5. HANDLER SIMPAN (CREATE)
     const handleSave = async () => {
-        // Validasi
-        if (!formData.tempat_pendidikan || !formData.gelar || !formData.bidang_studi) {
-            toast.error("Nama Kampus, Gelar, dan Jurusan wajib diisi!");
+        if (!formData.tempat_pendidikan || !formData.gelar) {
+            toast.error("Nama Kampus dan Gelar wajib diisi!");
             return;
         }
 
@@ -128,9 +127,8 @@ export default function PendidikanAdminPage() {
             if (error) throw error;
 
             toast.success("Pendidikan berhasil ditambahkan!");
-            setShowAddModal(false);
-            resetForm();
-            fetchEducation(); // Refresh data
+            closeModal();
+            fetchEducation();
 
         } catch (error: any) {
             toast.error("Gagal menyimpan: " + error.message);
@@ -139,7 +137,62 @@ export default function PendidikanAdminPage() {
         }
     };
 
-    // 6. HANDLER DELETE
+    // 6. HANDLER EDIT (PREPARE DATA)
+    const handleEdit = (edu: Education) => {
+        setSelectedEdu(edu);
+        setFormData({
+            tempat_pendidikan: edu.tempat_pendidikan,
+            gelar: edu.gelar,
+            bidang_studi: edu.bidang_studi,
+            periode: edu.periode,
+            nilai: edu.nilai || '',
+            deskripsi: edu.deskripsi || '',
+            keahlian_pendidikan: edu.keahlian_pendidikan || '',
+            link_institusi: edu.link_institusi || ''
+        });
+        setShowEditModal(true);
+    };
+
+    // 7. HANDLER UPDATE (EXECUTE UPDATE)
+    const handleUpdate = async () => {
+        if (!selectedEdu) return;
+        if (!formData.tempat_pendidikan || !formData.gelar) {
+            toast.error("Nama Kampus dan Gelar wajib diisi!");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from('educations')
+                .update({
+                    ...formData,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', selectedEdu.id);
+
+            if (error) throw error;
+
+            toast.success("Data pendidikan berhasil diperbarui!");
+            closeModal();
+            fetchEducation();
+
+        } catch (error: any) {
+            toast.error("Gagal update: " + error.message);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Helper: Tutup Modal & Reset
+    const closeModal = () => {
+        setShowAddModal(false);
+        setShowEditModal(false);
+        setSelectedEdu(null);
+        resetForm();
+    };
+
+    // 8. HANDLER DELETE
     const handleDelete = (edu: Education) => {
         setSelectedEdu(edu);
         setShowDeleteAlert(true);
@@ -165,11 +218,6 @@ export default function PendidikanAdminPage() {
             setShowDeleteAlert(false);
             setSelectedEdu(null);
         }
-    };
-
-    // Placeholder Edit (Akan diaktifkan nanti)
-    const handleEdit = (edu: Education) => {
-        toast('Fitur Edit akan segera hadir', { icon: '🚧' });
     };
 
     // Filter & Pagination Logic
@@ -353,15 +401,16 @@ export default function PendidikanAdminPage() {
                 </div>
             )}
 
-            {/* --- MODAL ADD --- */}
-            {showAddModal && (
+            {/* --- MODAL DYNAMIC (ADD / EDIT) --- */}
+            {(showAddModal || showEditModal) && (
                 <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm animate-in fade-in duration-200">
                     <Card className="w-full max-w-2xl border-0 shadow-2xl my-8 scale-100 animate-in zoom-in-95 duration-200">
                         <CardHeader className="border-b border-slate-100 flex flex-row items-center justify-between">
                             <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                <Plus className="w-5 h-5 text-orange-600" /> Tambah Pendidikan Baru
+                                {showAddModal ? <Plus className="w-5 h-5 text-orange-600" /> : <Edit className="w-5 h-5 text-blue-600" />}
+                                {showAddModal ? 'Tambah Pendidikan Baru' : 'Edit Data Pendidikan'}
                             </CardTitle>
-                            <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-6 h-6" /></button>
+                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-700"><X className="w-6 h-6" /></button>
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="space-y-4">
@@ -443,13 +492,17 @@ export default function PendidikanAdminPage() {
                             </div>
 
                             <div className="flex gap-3 mt-6">
-                                <Button variant="outline" className="flex-1 border-slate-200 rounded-xl" onClick={() => setShowAddModal(false)}>Batal</Button>
+                                <Button variant="outline" className="flex-1 border-slate-200 rounded-xl" onClick={closeModal}>Batal</Button>
                                 <Button
-                                    className="flex-1 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-xl"
-                                    onClick={handleSave}
+                                    className={`flex-1 text-white rounded-xl ${showAddModal ? 'bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                    onClick={showAddModal ? handleSave : handleUpdate}
                                     disabled={isSaving}
                                 >
-                                    {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Menyimpan...</> : 'Simpan Data'}
+                                    {isSaving ? (
+                                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Menyimpan...</>
+                                    ) : (
+                                        showAddModal ? 'Simpan Data' : 'Simpan Perubahan'
+                                    )}
                                 </Button>
                             </div>
                         </CardContent>
