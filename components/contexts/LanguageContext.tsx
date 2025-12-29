@@ -46,6 +46,19 @@ const dictionary = {
             desc: "Perjalanan karir saya dalam menciptakan solusi digital yang berdampak nyata."
         },
         // ------------------------------------------
+        // --- TAMBAHAN BARU: HALAMAN PORTOFOLIO ---
+        portfolioPage: {
+            tagline: "KARYA TERBAIK",
+            title: "Portofolio &",
+            titleAccent: "Sertifikasi",
+            desc: "Kumpulan proyek nyata dan pengakuan profesional yang telah saya raih.",
+            tabProject: "Proyek",
+            tabCert: "Sertifikat",
+            btnView: "Lihat Detail",
+            btnCredential: "Lihat Kredensial",
+            noDataProj: "Belum ada proyek yang ditampilkan.",
+            noDataCert: "Belum ada sertifikat yang ditampilkan."
+        },
         portfolioDesc: [
             "Sistem manajemen akademik terintegrasi untuk universitas dengan fitur KRS, penilaian, dan data mahasiswa.",
             "Aplikasi Point of Sales (POS) berbasis mobile untuk membantu UMKM mengelola transaksi dan stok barang.",
@@ -102,6 +115,19 @@ const dictionary = {
             title: "Professional Journey &",
             titleAccent: "Dedication.",
             desc: "My career path in creating impactful digital solutions."
+        },
+        // --- NEW ADDITION: PORTFOLIO PAGE ---
+        portfolioPage: {
+            tagline: "FEATURED WORKS",
+            title: "Portfolio &",
+            titleAccent: "Certifications",
+            desc: "A collection of real-world projects and professional recognitions I have achieved.",
+            tabProject: "Projects",
+            tabCert: "Certificates",
+            btnView: "View Details",
+            btnCredential: "View Credential",
+            noDataProj: "No projects displayed yet.",
+            noDataCert: "No certificates displayed yet."
         },
         portfolioDesc: [
             "Integrated academic management system for universities featuring course selection, grading, and student data.",

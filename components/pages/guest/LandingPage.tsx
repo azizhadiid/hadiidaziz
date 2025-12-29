@@ -277,7 +277,7 @@ function LandingPageContent() {
             </section>
 
             {/* --- EXPERIENCE SECTION (BARU & GACOR) --- */}
-            <section id="experience" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden border-t border-slate-200/60">
+            <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden border-t border-slate-200/60">
                 <div className="max-w-7xl mx-auto relative z-10">
 
                     {/* Header Section */}
