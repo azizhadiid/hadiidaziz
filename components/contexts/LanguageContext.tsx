@@ -9,26 +9,40 @@ type Language = 'id' | 'en';
 const dictionary = {
     id: {
         nav: [
-            { id: 'home', label: 'Beranda', path: '/' },
-            { id: 'about', label: 'Tentang', path: '/about' },
+            { id: 'home', label: 'Beranda', path: '/#home' }, // Update path ke ID
+            { id: 'about', label: 'Tentang', path: '/#about' }, // Update path ke ID
             { id: 'portfolio', label: 'Portofolio', path: '/portofolio' },
             { id: 'contact', label: 'Kontak', path: '/kontak' }
         ],
         hero: {
             title1: "Membangun Pengalaman Digital",
             title2: "dengan Sepenuh Hati",
-            desc: "Mengubah ide menjadi solusi elegan melalui desain kreatif dan pengembangan inovatif.",
+            desc: "Mengubah ide menjadi solusi elegan melalui desain kreatif dan pengembangan inovatif sebagai Full-stack Developer.",
             btnWork: "Lihat Karya Saya",
             btnConnect: "Mari Terhubung",
             stats: { exp: "Tahun Pengalaman", proj: "Proyek Selesai", client: "Klien Puas" }
         },
-        // --- TAMBAHAN YANG HILANG ---
+        // --- SECTION ABOUT BARU ---
+        aboutSection: {
+            tagline: "TENTANG SAYA",
+            title: "Lebih dari Sekadar Kode, Saya Membangun",
+            titleAccent: "Solusi Digital.",
+            // Data diambil dan diringkas dari Ringkasan CV
+            description: [
+                "Saya adalah Software Developer yang sangat termotivasi dengan pengalaman sebagai Full-stack Developer. Saya memiliki hasrat yang kuat untuk membangun aplikasi yang skalabel dan ramah pengguna.",
+                "Keahlian saya terletak pada pemanfaatan teknologi web modern seperti React, Next.js, Tailwind CSS, dan Node.js untuk mengubah ide kompleks menjadi solusi yang elegan dan fungsional. Saya seorang pembelajar cepat yang bersemangat untuk terus berkembang dan memberikan dampak positif melalui teknologi."
+            ],
+            educationTitle: "Pendidikan",
+            skillsTitle: "Arsenat Teknologi",
+            skillsDesc: "Alat dan teknologi yang saya gunakan untuk menghidupkan ide."
+            // Nama skill tidak perlu diterjemahkan
+        },
+        // ---------------------------
         portfolioDesc: [
             "Sistem manajemen akademik terintegrasi untuk universitas dengan fitur KRS, penilaian, dan data mahasiswa.",
             "Aplikasi Point of Sales (POS) berbasis mobile untuk membantu UMKM mengelola transaksi dan stok barang.",
             "Website profil perusahaan BUMN yang modern, responsif, dan informatif untuk meningkatkan citra publik."
         ],
-        // -----------------------------
         footerSection: {
             ctaTitle: "Siap memulai proyek?",
             ctaDesc: "Mari ciptakan sesuatu yang luar biasa bersama.",
@@ -44,26 +58,41 @@ const dictionary = {
     },
     en: {
         nav: [
-            { id: 'home', label: 'Home', path: '/' },
-            { id: 'about', label: 'About', path: '/about' },
+            { id: 'home', label: 'Home', path: '/#home' }, // Update path ke ID
+            { id: 'about', label: 'About', path: '/#about' }, // Update path ke ID
             { id: 'portfolio', label: 'Portfolio', path: '/portofolio' },
             { id: 'contact', label: 'Contact', path: '/kontak' }
         ],
         hero: {
             title1: "Crafting Digital Experiences",
             title2: "with Passion",
-            desc: "Transforming ideas into elegant solutions through creative design and innovative development.",
+            desc: "Transforming ideas into elegant solutions through creative design and innovative development as a Full-stack Developer.",
             btnWork: "View My Work",
             btnConnect: "Let's Connect",
             stats: { exp: "Years Experience", proj: "Projects Completed", client: "Happy Clients" }
         },
-        // --- MISSING ADDITION ---
+        // --- NEW ABOUT SECTION ---
+        aboutSection: {
+            tagline: "ABOUT ME",
+            title: "More Than Just Code, I Build",
+            titleAccent: "Digital Solutions.",
+            // Data extracted and summarized from CV Summary
+            description: [
+                "I am a highly motivated Software Developer with experience as a Full-stack Developer. I have a strong passion for building scalable and user-friendly applications.",
+                "My expertise lies in leveraging modern web technologies such as React, Next.js, Tailwind CSS, and Node.js to transform complex ideas into elegant, functional solutions. I am a quick learner eager to continuously grow and make a positive impact through technology."
+            ],
+            educationTitle: "Education",
+            // Data from CV Education
+            skillsTitle: "Tech Arsenal",
+            skillsDesc: "Tools and technologies I leverage to bring ideas to life."
+            // Skill names don't need translation
+        },
+        // -------------------------
         portfolioDesc: [
             "Integrated academic management system for universities featuring course selection, grading, and student data.",
             "Mobile-based Point of Sales (POS) application helping SMEs manage transactions and inventory.",
             "Modern, responsive, and informative state-owned enterprise profile website to enhance public image."
         ],
-        // -------------------------
         footerSection: {
             ctaTitle: "Ready to start a project?",
             ctaDesc: "Let's build something amazing together.",

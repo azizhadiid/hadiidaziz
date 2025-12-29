@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Menu, X, Github, Linkedin, Globe, Heart, MapPin, Mail, ArrowRight, InstagramIcon } from 'lucide-react';
 import { useLanguage } from '@/components/contexts/LanguageContext';
 import Link from 'next/link';
@@ -14,8 +14,41 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
     const { lang, toggleLanguage, t } = useLanguage();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Mengambil path URL saat ini (contoh: '/', '/about', '/kontak')
+    // 1. Ambil Pathname (misal: '/', '/portofolio')
     const pathname = usePathname();
+
+    // 2. State untuk melacak Hash aktif (misal: '#home', '#about')
+    const [activeHash, setActiveHash] = useState('#home');
+
+    // 3. EFFECT: SCROLL SPY (Mendeteksi posisi scroll user)
+    useEffect(() => {
+        // Hanya jalankan scroll spy jika berada di halaman Landing Page ('/')
+        if (pathname === '/') {
+            const sections = ['home', 'about']; // ID section yang mau dipantau
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        // Jika section terlihat di layar, update activeHash
+                        setActiveHash(`#${entry.target.id}`);
+                    }
+                });
+            }, {
+                // Opsi ini membuat trigger terjadi saat elemen ada di tengah layar
+                rootMargin: '-50% 0px -50% 0px'
+            });
+
+            sections.forEach((id) => {
+                const element = document.getElementById(id);
+                if (element) observer.observe(element);
+            });
+
+            return () => observer.disconnect();
+        } else {
+            // Jika pindah ke halaman lain (misal Portofolio), reset hash
+            setActiveHash('');
+        }
+    }, [pathname]);
 
     return (
         <div className="min-h-screen bg-linear-to-br from-slate-50 via-orange-50/30 to-white font-sans text-slate-900 flex flex-col">
@@ -37,28 +70,37 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                         {/* Desktop Menu */}
                         <div className="hidden lg:flex items-center gap-8">
                             {t.nav.map((item) => {
-                                // Cek apakah path saat ini sama dengan path item navigasi
-                                const isActive = pathname === item.path;
+                                // LOGIKA BARU UNTUK MENENTUKAN ACTIVE STATE
+                                const isHashLink = item.path.startsWith('/#');
+
+                                let isActive = false;
+
+                                if (isHashLink) {
+                                    // Jika link hash (Beranda/Tentang), cek path '/' DAN hash yang cocok
+                                    isActive = pathname === '/' && item.path === `/${activeHash}`;
+                                } else {
+                                    // Jika link halaman biasa (Portofolio/Kontak), cek path biasa
+                                    isActive = pathname === item.path;
+                                }
 
                                 return (
                                     <Link
                                         key={item.id}
                                         href={item.path}
-                                        // HAPUS 'px-1' agar garisnya pas selebar teks, bukan selebar kotak padding
                                         className={`relative group py-2 text-base font-semibold tracking-wide transition-colors ${isActive ? 'text-orange-600' : 'text-slate-600 hover:text-orange-600'
                                             }`}
                                     >
                                         {item.label}
 
-                                        {/* Underline Animation (FIXED with Scale) */}
+                                        {/* Underline Animation (Scale Logic) */}
                                         <span
                                             className={`
-                    absolute left-0 -bottom-1 w-full h-0.5 bg-orange-500 rounded-full
-                    transition-transform duration-300 ease-out origin-left
-                    ${isActive
-                                                    ? 'scale-x-100' // Jika aktif, skala 100% (muncul)
-                                                    : 'scale-x-0 group-hover:scale-x-100'} // Jika tidak, skala 0 (hilang), hover muncul
-                `}
+                                                absolute left-0 -bottom-1 w-full h-0.5 bg-orange-500 rounded-full
+                                                transition-transform duration-300 ease-out origin-left
+                                                ${isActive
+                                                    ? 'scale-x-100' // Muncul jika aktif
+                                                    : 'scale-x-0 group-hover:scale-x-100'} // Muncul jika hover
+                                            `}
                                         />
                                     </Link>
                                 );
@@ -94,12 +136,20 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                     <div className="lg:hidden bg-white border-t border-slate-100 absolute w-full shadow-xl">
                         <div className="px-4 py-6 space-y-4">
                             {t.nav.map((item) => {
-                                const isActive = pathname === item.path;
+                                // COPY LOGIKA ACTIVE KE MOBILE JUGA
+                                const isHashLink = item.path.startsWith('/#');
+                                let isActive = false;
+                                if (isHashLink) {
+                                    isActive = pathname === '/' && item.path === `/${activeHash}`;
+                                } else {
+                                    isActive = pathname === item.path;
+                                }
+
                                 return (
                                     <Link
                                         key={item.id}
                                         href={item.path}
-                                        onClick={() => setIsMenuOpen(false)} // Tutup menu saat diklik
+                                        onClick={() => setIsMenuOpen(false)}
                                         className={`block w-full text-left px-4 py-3 text-lg font-semibold rounded-xl transition-all
                                             ${isActive
                                                 ? 'text-orange-600 bg-orange-50'

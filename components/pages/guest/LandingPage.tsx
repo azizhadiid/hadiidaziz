@@ -1,44 +1,66 @@
 'use client'
 
-import React from 'react';
-import { Mail, ExternalLink, Code, Award, Briefcase } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { Code, Briefcase, Box, Braces, Layout, Server, Globe, Database, GraduationCap, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageProvider, useLanguage } from '@/components/contexts/LanguageContext';
 import MainLayoutGuest from '@/components/layout/guest/MainLayoutGuest';
 import Link from 'next/link';
+import supabase from '@/lib/db';
+
+// --- TIPE DATA PENDIDIKAN DARI DB ---
+interface EducationData {
+    id: string;
+    tempat_pendidikan: string;
+    gelar: string;
+    periode: string;
+    nilai: string;
+    created_at: string;
+}
+
+// Daftar Skill Statis (Nama teknologi tidak perlu diterjemahkan)
+const skillsList = [
+    { name: "React & Next.js", icon: Box, category: "Frontend" },
+    { name: "TypeScript", icon: Braces, category: "Language" },
+    { name: "Tailwind CSS", icon: Layout, category: "Styling" },
+    { name: "Node.js & Express", icon: Server, category: "Backend" },
+    { name: "Laravel & PHP", icon: Globe, category: "Backend" },
+    { name: "SQL & NoSQL", icon: Database, category: "Database" },
+];
 
 // Kita pisahkan konten ke komponen terpisah agar bisa pakai hook useLanguage
 function LandingPageContent() {
-    const { t, lang } = useLanguage(); // Ambil teks dan status bahasa
+    const { t } = useLanguage();
 
-    // Data Dummy (Nanti diganti fetch DB)
-    const portfolio = [
-        {
-            title: "Sistem Informasi Akademik",
-            category: "Web Development",
-            image: "https://images.unsplash.com/photo-1557821552-17105176677c?w=500&h=300&fit=crop",
-            description: t.portfolioDesc[0] // Ambil dari dictionary
-        },
-        {
-            title: "Aplikasi Kasir UMKM",
-            category: "Mobile App",
-            image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&h=300&fit=crop",
-            description: t.portfolioDesc[1]
-        },
-        {
-            title: "Company Profile BUMN",
-            category: "Frontend",
-            image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=500&h=300&fit=crop",
-            description: t.portfolioDesc[2]
-        }
-    ];
+    // --- STATE UNTUK DATA DB ---
+    const [educations, setEducations] = useState<EducationData[]>([]);
+    const [loadingEdu, setLoadingEdu] = useState(true);
 
-    const certificates = [
-        { title: "AWS Cloud Practitioner", org: "Amazon Web Services", date: "2024" },
-        { title: "Frontend Developer Expert", org: "Dicoding Indonesia", date: "2023" },
-        { title: "Google UX Design", org: "Coursera", date: "2023" },
-    ];
+    // --- FETCH DATA DARI SUPABASE ---
+    useEffect(() => {
+        const fetchEducations = async () => {
+            try {
+                // Ambil data dari tabel 'educations'
+                // Kita urutkan berdasarkan periode atau created_at (terbaru diatas)
+                const { data, error } = await supabase
+                    .from('educations')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error("Error fetching education:", error);
+                } else {
+                    setEducations(data || []);
+                }
+            } catch (err) {
+                console.error("Unexpected error:", err);
+            } finally {
+                setLoadingEdu(false);
+            }
+        };
+
+        fetchEducations();
+    }, []);
 
     return (
         <MainLayoutGuest>
@@ -130,6 +152,106 @@ function LandingPageContent() {
                                     <p className="text-[10px] sm:text-xs font-medium text-slate-700 whitespace-nowrap">Available for work</p>
                                 </div>
 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* --- ABOUT SECTION --- */}
+            <section id="about" className="py-20 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-orange-50/40 to-slate-50 relative overflow-hidden">
+                <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-96 h-96 bg-red-200/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+                    <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+                        <div className="lg:col-span-7 space-y-10">
+                            <div className="space-y-4">
+                                <span className="text-orange-600 font-bold tracking-wider uppercase text-sm">{t.aboutSection.tagline}</span>
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
+                                    {t.aboutSection.title} <br />
+                                    <span className="bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                                        {t.aboutSection.titleAccent}
+                                    </span>
+                                </h2>
+                            </div>
+                            <div className="space-y-6 text-slate-600 text-lg leading-relaxed">
+                                {t.aboutSection.description.map((paragraph, index) => (
+                                    <p key={index}>{paragraph}</p>
+                                ))}
+                            </div>
+
+                            {/* --- EDUCATION BLOCK (DYNAMIC DB) --- */}
+                            <div className="bg-white/60 backdrop-blur-sm border border-slate-200/60 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                                <h3 className="flex items-center gap-3 text-xl font-bold text-slate-900 mb-6">
+                                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+                                        <GraduationCap className="w-6 h-6" />
+                                    </div>
+                                    {/* Judul tetap dari Language Context */}
+                                    {t.aboutSection.educationTitle}
+                                </h3>
+                                <div className="space-y-6">
+                                    {loadingEdu ? (
+                                        // Loading Skeleton Sederhana
+                                        <div className="animate-pulse space-y-4">
+                                            <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                                            <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                                        </div>
+                                    ) : educations.length > 0 ? (
+                                        // Mapping Data dari DB
+                                        educations.map((edu) => (
+                                            <div key={edu.id} className="relative pl-8 border-l-2 border-orange-200">
+                                                <div className="absolute -left-2.25 top-1.5 w-4 h-4 bg-white border-2 border-orange-500 rounded-full"></div>
+                                                {/* Data Konten dari DB */}
+                                                <h4 className="text-lg font-bold text-slate-900">{edu.gelar}</h4>
+                                                <p className="text-slate-700 font-medium">{edu.tempat_pendidikan}</p>
+                                                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                                                    <span>{edu.periode}</span>
+                                                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                                    <span className="font-semibold text-orange-600">
+                                                        {edu.nilai}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        // Fallback jika DB kosong
+                                        <p className="text-slate-500 italic">No education data available yet.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="lg:col-span-5 lg:sticky lg:top-28 space-y-10">
+                            <div>
+                                <h3 className="flex items-center gap-3 text-xl font-bold text-slate-900 mb-3">
+                                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+                                        <Cpu className="w-6 h-6" />
+                                    </div>
+                                    {t.aboutSection.skillsTitle}
+                                </h3>
+                                <p className="text-slate-600">{t.aboutSection.skillsDesc}</p>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                {skillsList.map((skill, index) => (
+                                    <div key={index} className="group bg-white border border-slate-200/80 rounded-xl p-4 hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 flex flex-col items-center text-center gap-3">
+                                        <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500 group-hover:text-orange-600 group-hover:bg-orange-50 transition-colors">
+                                            <skill.icon className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900 text-sm group-hover:text-orange-600 transition-colors">{skill.name}</h4>
+                                            <p className="text-xs text-slate-400 mt-1">{skill.category}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="relative h-64 rounded-2xl overflow-hidden shadow-2xl hidden lg:block">
+                                <img src="/img/medal.jpg" alt="Coding" className="w-full h-full object-cover opacity-90 grayscale hover:grayscale-0 transition-all duration-700" />
+                                <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent"></div>
+                                <div className="absolute bottom-6 left-6 right-6 text-white">
+                                    <p className="font-bold text-lg">"Always learning, always building."</p>
+                                    <p className="text-sm text-slate-300">- Aziz Alhadiid</p>
+                                </div>
                             </div>
                         </div>
                     </div>
