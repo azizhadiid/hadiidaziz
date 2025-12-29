@@ -12,45 +12,65 @@ interface MainLayoutGuestProps {
 export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
     const { lang, toggleLanguage, t } = useLanguage();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('beranda');
 
     // Fungsi Scroll Smooth
     const scrollToSection = (sectionId: string) => {
         setIsMenuOpen(false);
+        setActiveSection(sectionId);
+
         const element = document.getElementById(sectionId);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
+
     return (
-        <div className="min-h-screen bg-white font-sans text-slate-900 flex flex-col">
+        <div className="min-h-screen bg-linear-to-br from-slate-50 via-orange-50/30 to-white font-sans text-slate-900 flex flex-col">
 
             {/* --- NAVIGATION BAR --- */}
-            <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50 transition-all duration-300">
+            <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-24">
+                    <div className="flex justify-between items-center h-16">
 
                         {/* Logo */}
                         <div className="shrink-0 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
                             <img
                                 src="/img/logo.png"
                                 alt="Logo"
-                                className="h-14 w-auto object-contain hover:opacity-80 transition-opacity"
+                                className="h-10 w-auto object-contain hover:opacity-80 transition-opacity"
                             />
                         </div>
 
                         {/* Desktop Menu */}
-                        <div className="hidden lg:flex items-center gap-10">
-                            {t.nav.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => scrollToSection(item.id)}
-                                    className="text-base font-semibold tracking-wide text-slate-600 hover:text-orange-600 transition-colors"
-                                >
-                                    {item.label}
-                                </button>
-                            ))}
+                        <div className="hidden lg:flex items-center gap-8">
+                            {t.nav.map((item) => {
+                                const isActive = activeSection === item.id;
+
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => scrollToSection(item.id)}
+                                        className="relative group px-1 py-2 text-base font-semibold tracking-wide text-slate-600 hover:text-orange-600 transition-colors"
+                                    >
+                                        {item.label}
+
+                                        {/* Underline */}
+                                        <span
+                                            className={`
+                        absolute left-1/2 -bottom-1 h-0.5 bg-orange-500 rounded-full
+                        transition-all duration-300 ease-out
+                        ${isActive
+                                                    ? 'w-full left-0'
+                                                    : 'w-0 group-hover:w-full group-hover:left-0'}
+                    `}
+                                        />
+                                    </button>
+                                );
+                            })}
                         </div>
+
 
                         {/* Right Actions */}
                         <div className="hidden lg:flex items-center gap-5">
@@ -84,7 +104,11 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                                 <button
                                     key={item.id}
                                     onClick={() => scrollToSection(item.id)}
-                                    className="block w-full text-left px-4 py-3 text-lg font-semibold text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
+                                    className={`block w-full text-left px-4 py-3 text-lg font-semibold rounded-xl transition-all
+            ${activeSection === item.id
+                                            ? 'text-orange-600 bg-orange-50'
+                                            : 'text-slate-600 hover:text-orange-600 hover:bg-orange-50'}
+        `}
                                 >
                                     {item.label}
                                 </button>
