@@ -44,7 +44,7 @@ function LandingPageContent() {
         <MainLayoutGuest>
             {/* --- HERO SECTION --- */}
             <section id="home" className="pt-12 pb-16 px-4 sm:px-6 lg:px-8 bg-linear-to-br from-slate-50 via-orange-50/30 to-white overflow-hidden">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
                         {/* TEXT CONTENT (Order 2 di Mobile, Order 1 di Desktop) */}
@@ -80,7 +80,7 @@ function LandingPageContent() {
                         {/* IMAGE CONTENT (Order 1 di Mobile, Order 2 di Desktop) */}
                         <div className="order-1 lg:order-2 flex justify-center relative py-8 lg:py-0">
                             {/* Container Gambar: Ukuran disesuaikan agar tidak terlalu besar di mobile */}
-                            <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-120 lg:h-120">
+                            <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-120 lg:h-120 lg:ml-14">
 
                                 <div className="absolute inset-0 rounded-full ring-0 hover:ring-8 hover:ring-orange-300/40 transition-all duration-500"></div>
 
@@ -135,8 +135,6 @@ function LandingPageContent() {
                     </div>
                 </div>
             </section>
-
-
         </MainLayoutGuest >
     );
 }
