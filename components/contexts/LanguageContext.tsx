@@ -38,6 +38,32 @@ const dictionary = {
             // Nama skill tidak perlu diterjemahkan
         },
         // ---------------------------
+        // --- TAMBAHAN BARU: HALAMAN KONTAK ---
+        contactPage: {
+            tagline: "HUBUNGI SAYA",
+            title: "Mari Memulai",
+            titleAccent: "Sesuatu yang Baru.",
+            desc: "Punya ide proyek atau ingin berdiskusi? Jangan ragu untuk menghubungi saya. Saya selalu terbuka untuk peluang baru.",
+            form: {
+                name: "Nama Lengkap",
+                email: "Alamat Email",
+                subject: "Subjek",
+                message: "Pesan",
+                btnSend: "Kirim Pesan",
+                placeholderName: "Masukkan nama Anda",
+                placeholderEmail: "contoh@email.com",
+                placeholderSubject: "Apa yang ingin didiskusikan?",
+                placeholderMsg: "Tuliskan detail pesan Anda di sini..."
+            },
+            info: {
+                title: "Informasi Kontak",
+                emailLabel: "Email Saya",
+                waLabel: "WhatsApp",
+                waBtn: "Chat Sekarang",
+                locLabel: "Lokasi",
+                locDesc: "Kota Jambi, Indonesia"
+            }
+        },
         // --- TAMBAHAN BARU: SECTION PENGALAMAN ---
         experienceSection: {
             tagline: "PENGALAMAN KERJA",
@@ -109,6 +135,32 @@ const dictionary = {
             // Skill names don't need translation
         },
         // -------------------------
+        // --- NEW ADDITION: CONTACT PAGE ---
+        contactPage: {
+            tagline: "GET IN TOUCH",
+            title: "Let's Start",
+            titleAccent: "Something New.",
+            desc: "Have a project idea or want to discuss? Don't hesitate to reach out. I'm always open to new opportunities.",
+            form: {
+                name: "Full Name",
+                email: "Email Address",
+                subject: "Subject",
+                message: "Message",
+                btnSend: "Send Message",
+                placeholderName: "Enter your name",
+                placeholderEmail: "example@email.com",
+                placeholderSubject: "What do you want to discuss?",
+                placeholderMsg: "Write your message details here..."
+            },
+            info: {
+                title: "Contact Information",
+                emailLabel: "My Email",
+                waLabel: "WhatsApp",
+                waBtn: "Chat Now",
+                locLabel: "Location",
+                locDesc: "Jambi City, Indonesia"
+            }
+        },
         // --- NEW ADDITION: EXPERIENCE SECTION ---
         experienceSection: {
             tagline: "WORK EXPERIENCE",
