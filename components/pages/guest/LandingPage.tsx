@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { Code, Briefcase, Box, Braces, Layout, Server, Globe, Database, GraduationCap, Cpu } from 'lucide-react';
+import { Code, Briefcase, Box, Braces, Layout, Server, Globe, Database, GraduationCap, Cpu, Building2, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageProvider, useLanguage } from '@/components/contexts/LanguageContext';
 import MainLayoutGuest from '@/components/layout/guest/MainLayoutGuest';
@@ -15,6 +15,18 @@ interface EducationData {
     gelar: string;
     periode: string;
     nilai: string;
+    created_at: string;
+}
+
+interface ExperienceData {
+    id: string;
+    posisi: string;
+    perusahaan: string;
+    jenis_pekerjaan: string;
+    periode: string;
+    lokasi: string;
+    deskripsi: string;
+    keahlian: string; // Akan kita split jadi array nanti
     created_at: string;
 }
 
@@ -34,32 +46,38 @@ function LandingPageContent() {
 
     // --- STATE UNTUK DATA DB ---
     const [educations, setEducations] = useState<EducationData[]>([]);
+    const [experiences, setExperiences] = useState<ExperienceData[]>([]); // State Pengalaman
     const [loadingEdu, setLoadingEdu] = useState(true);
+    const [loadingExp, setLoadingExp] = useState(true); // Loading Pengalaman
 
-    // --- FETCH DATA DARI SUPABASE ---
+    // --- FETCH DATA ---
     useEffect(() => {
-        const fetchEducations = async () => {
+        const fetchData = async () => {
             try {
-                // Ambil data dari tabel 'educations'
-                // Kita urutkan berdasarkan periode atau created_at (terbaru diatas)
-                const { data, error } = await supabase
+                // 1. Fetch Education
+                const eduReq = await supabase
                     .from('educations')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) {
-                    console.error("Error fetching education:", error);
-                } else {
-                    setEducations(data || []);
-                }
+                if (eduReq.data) setEducations(eduReq.data);
+                setLoadingEdu(false);
+
+                // 2. Fetch Experiences
+                const expReq = await supabase
+                    .from('experiences')
+                    .select('*')
+                    .order('created_at', { ascending: false }); // Urutkan dari yang terbaru
+
+                if (expReq.data) setExperiences(expReq.data);
+                setLoadingExp(false);
+
             } catch (err) {
                 console.error("Unexpected error:", err);
-            } finally {
-                setLoadingEdu(false);
             }
         };
 
-        fetchEducations();
+        fetchData();
     }, []);
 
     return (
@@ -257,6 +275,101 @@ function LandingPageContent() {
                     </div>
                 </div>
             </section>
+
+            {/* --- EXPERIENCE SECTION (BARU & GACOR) --- */}
+            <section id="experience" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden border-t border-slate-200/60">
+                <div className="max-w-7xl mx-auto relative z-10">
+
+                    {/* Header Section */}
+                    <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                        <span className="text-orange-600 font-bold tracking-wider uppercase text-sm">{t.experienceSection.tagline}</span>
+                        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
+                            {t.experienceSection.title} <br className="hidden sm:block" />
+                            <span className="bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                                {t.experienceSection.titleAccent}
+                            </span>
+                        </h2>
+                        <p className="text-slate-600 text-lg">{t.experienceSection.desc}</p>
+                    </div>
+
+                    {/* Experience Grid */}
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {loadingExp ? (
+                            // Skeleton Loading
+                            [1, 2].map((i) => (
+                                <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-64 animate-pulse">
+                                    <div className="h-6 bg-slate-200 rounded w-1/2 mb-4"></div>
+                                    <div className="h-4 bg-slate-200 rounded w-1/3 mb-8"></div>
+                                    <div className="space-y-2">
+                                        <div className="h-3 bg-slate-200 rounded w-full"></div>
+                                        <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : experiences.length > 0 ? (
+                            experiences.map((exp) => (
+                                <div
+                                    key={exp.id}
+                                    className="group bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/60 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 flex flex-col h-full"
+                                >
+                                    {/* Header Card */}
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
+                                                {exp.posisi}
+                                            </h3>
+                                            <div className="flex items-center gap-2 text-slate-600 mt-1 font-medium">
+                                                <Building2 className="w-4 h-4 text-orange-500" />
+                                                {exp.perusahaan}
+                                            </div>
+                                        </div>
+                                        <span className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-bold uppercase rounded-full border border-orange-100">
+                                            {exp.jenis_pekerjaan}
+                                        </span>
+                                    </div>
+
+                                    {/* Meta Info */}
+                                    <div className="flex flex-wrap gap-4 text-sm text-slate-500 mb-6 border-b border-slate-100 pb-4">
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="w-4 h-4" />
+                                            {exp.periode}
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <MapPin className="w-4 h-4" />
+                                            {exp.lokasi}
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
+                                    <p className="text-slate-600 text-sm leading-relaxed mb-6 grow">
+                                        {exp.deskripsi}
+                                    </p>
+
+                                    {/* Skills Badges */}
+                                    {exp.keahlian && (
+                                        <div className="flex flex-wrap gap-2 mt-auto pt-4">
+                                            {exp.keahlian.split(',').map((skill, idx) => (
+                                                <span
+                                                    key={idx}
+                                                    className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-md border border-slate-200 group-hover:border-orange-200 group-hover:text-orange-700 transition-colors"
+                                                >
+                                                    {skill.trim()}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-2 text-center py-12 text-slate-500 bg-white rounded-2xl border border-dashed border-slate-300">
+                                <p>Belum ada data pengalaman yang ditambahkan.</p>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+            </section>
+
         </MainLayoutGuest >
     );
 }

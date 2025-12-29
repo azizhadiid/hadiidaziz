@@ -38,6 +38,14 @@ const dictionary = {
             // Nama skill tidak perlu diterjemahkan
         },
         // ---------------------------
+        // --- TAMBAHAN BARU: SECTION PENGALAMAN ---
+        experienceSection: {
+            tagline: "PENGALAMAN KERJA",
+            title: "Jejak Langkah &",
+            titleAccent: "Dedikasi Profesional.",
+            desc: "Perjalanan karir saya dalam menciptakan solusi digital yang berdampak nyata."
+        },
+        // ------------------------------------------
         portfolioDesc: [
             "Sistem manajemen akademik terintegrasi untuk universitas dengan fitur KRS, penilaian, dan data mahasiswa.",
             "Aplikasi Point of Sales (POS) berbasis mobile untuk membantu UMKM mengelola transaksi dan stok barang.",
@@ -88,6 +96,13 @@ const dictionary = {
             // Skill names don't need translation
         },
         // -------------------------
+        // --- NEW ADDITION: EXPERIENCE SECTION ---
+        experienceSection: {
+            tagline: "WORK EXPERIENCE",
+            title: "Professional Journey &",
+            titleAccent: "Dedication.",
+            desc: "My career path in creating impactful digital solutions."
+        },
         portfolioDesc: [
             "Integrated academic management system for universities featuring course selection, grading, and student data.",
             "Mobile-based Point of Sales (POS) application helping SMEs manage transactions and inventory.",
