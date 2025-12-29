@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Menu, X, Github, Linkedin, Globe, Heart, MapPin, Mail, ArrowRight, InstagramIcon } from 'lucide-react';
 import { useLanguage } from '@/components/contexts/LanguageContext';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation'; // Import ini penting untuk Active State
+import { usePathname } from 'next/navigation';
 
 interface MainLayoutGuestProps {
     children: React.ReactNode;
@@ -14,27 +14,24 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
     const { lang, toggleLanguage, t } = useLanguage();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // 1. Ambil Pathname (misal: '/', '/portofolio')
+    // 1. Ambil Pathname
     const pathname = usePathname();
 
-    // 2. State untuk melacak Hash aktif (misal: '#home', '#about')
+    // 2. State untuk melacak Hash aktif
     const [activeHash, setActiveHash] = useState('#home');
 
-    // 3. EFFECT: SCROLL SPY (Mendeteksi posisi scroll user)
+    // 3. EFFECT: SCROLL SPY
     useEffect(() => {
-        // Hanya jalankan scroll spy jika berada di halaman Landing Page ('/')
         if (pathname === '/') {
-            const sections = ['home', 'about']; // ID section yang mau dipantau
+            const sections = ['home', 'about', 'experience']; // Tambahkan ID section lain jika ada
 
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        // Jika section terlihat di layar, update activeHash
                         setActiveHash(`#${entry.target.id}`);
                     }
                 });
             }, {
-                // Opsi ini membuat trigger terjadi saat elemen ada di tengah layar
                 rootMargin: '-50% 0px -50% 0px'
             });
 
@@ -45,7 +42,6 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
 
             return () => observer.disconnect();
         } else {
-            // Jika pindah ke halaman lain (misal Portofolio), reset hash
             setActiveHash('');
         }
     }, [pathname]);
@@ -70,16 +66,12 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                         {/* Desktop Menu */}
                         <div className="hidden lg:flex items-center gap-8">
                             {t.nav.map((item) => {
-                                // LOGIKA BARU UNTUK MENENTUKAN ACTIVE STATE
                                 const isHashLink = item.path.startsWith('/#');
-
                                 let isActive = false;
 
                                 if (isHashLink) {
-                                    // Jika link hash (Beranda/Tentang), cek path '/' DAN hash yang cocok
                                     isActive = pathname === '/' && item.path === `/${activeHash}`;
                                 } else {
-                                    // Jika link halaman biasa (Portofolio/Kontak), cek path biasa
                                     isActive = pathname === item.path;
                                 }
 
@@ -91,15 +83,13 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                                             }`}
                                     >
                                         {item.label}
-
-                                        {/* Underline Animation (Scale Logic) */}
                                         <span
                                             className={`
                                                 absolute left-0 -bottom-1 w-full h-0.5 bg-orange-500 rounded-full
                                                 transition-transform duration-300 ease-out origin-left
                                                 ${isActive
-                                                    ? 'scale-x-100' // Muncul jika aktif
-                                                    : 'scale-x-0 group-hover:scale-x-100'} // Muncul jika hover
+                                                    ? 'scale-x-100'
+                                                    : 'scale-x-0 group-hover:scale-x-100'}
                                             `}
                                         />
                                     </Link>
@@ -136,7 +126,6 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                     <div className="lg:hidden bg-white border-t border-slate-100 absolute w-full shadow-xl">
                         <div className="px-4 py-6 space-y-4">
                             {t.nav.map((item) => {
-                                // COPY LOGIKA ACTIVE KE MOBILE JUGA
                                 const isHashLink = item.path.startsWith('/#');
                                 let isActive = false;
                                 if (isHashLink) {
@@ -175,20 +164,22 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                 {children}
             </main>
 
-            {/* --- FOOTER (Sekarang Multi Bahasa) --- */}
-            <footer className="relative bg-slate-950 text-slate-300 pt-20 pb-10 overflow-hidden font-sans border-t border-slate-900">
+            {/* --- FOOTER (THEME UPDATE: LIGHT) --- */}
+            {/* Ubah bg-slate-950 -> bg-white, text-slate-300 -> text-slate-600, border-slate-900 -> border-slate-200 */}
+            <footer className="relative bg-white text-slate-600 pt-20 pb-10 overflow-hidden font-sans border-t border-slate-200">
 
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-24 bg-orange-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+                {/* Glow Effect disesuaikan untuk background putih */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-24 bg-orange-100/60 blur-[100px] rounded-full pointer-events-none"></div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
                     {/* TOP SECTION: CTA */}
-                    <div className="flex flex-col md:flex-row justify-between items-center pb-16 border-b border-slate-800 gap-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center pb-16 border-b border-slate-200 gap-8">
                         <div className="text-center md:text-left">
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
                                 {t.footerSection.ctaTitle}
                             </h2>
-                            <p className="text-slate-400">{t.footerSection.ctaDesc}</p>
+                            <p className="text-slate-500">{t.footerSection.ctaDesc}</p>
                         </div>
 
                         <Link
@@ -206,16 +197,15 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                         {/* Brand Column */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-4">
-                                <div className="w-10 h-10 bg-linier-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg">
-                                    <img
-                                        src="/img/logo.png"
-                                        alt="Logo"
-                                        className="h-10 w-auto object-contain hover:opacity-80 transition-opacity"
-                                    />
-                                </div>
-                                <span className="text-2xl font-bold text-white tracking-tight">Aziz Hadiid</span>
+                                {/* Logo ditampilkan langsung tanpa kotak gradient agar cocok dengan background putih */}
+                                <img
+                                    src="/img/logo.png"
+                                    alt="Logo"
+                                    className="h-10 w-auto object-contain hover:opacity-80 transition-opacity"
+                                />
+                                <span className="text-2xl font-bold text-slate-900 tracking-tight">Aziz Hadiid</span>
                             </div>
-                            <p className="text-slate-400 text-sm leading-relaxed">
+                            <p className="text-slate-500 text-sm leading-relaxed">
                                 {t.footerSection.brandDesc}
                             </p>
 
@@ -230,7 +220,8 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                                         href={item.href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-orange-500 hover:bg-orange-500 transition-all duration-300 group"
+                                        // Update style icon untuk background putih
+                                        className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-white hover:border-orange-500 hover:bg-orange-500 transition-all duration-300 group"
                                     >
                                         <item.icon className="w-4 h-4" />
                                     </a>
@@ -240,11 +231,11 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
 
                         {/* Quick Links */}
                         <div>
-                            <h3 className="text-white font-semibold mb-6">{t.footerSection.quickLinks}</h3>
+                            <h3 className="text-slate-900 font-bold mb-6">{t.footerSection.quickLinks}</h3>
                             <ul className="space-y-3">
                                 {t.nav.map((item) => (
                                     <li key={item.id}>
-                                        <Link href={item.path} className="text-sm hover:text-orange-400 transition-colors flex items-center gap-2 group">
+                                        <Link href={item.path} className="text-sm text-slate-600 hover:text-orange-600 transition-colors flex items-center gap-2 group">
                                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                                             {item.label}
                                         </Link>
@@ -255,11 +246,11 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
 
                         {/* Services */}
                         <div>
-                            <h3 className="text-white font-semibold mb-6">{t.footerSection.servicesTitle}</h3>
+                            <h3 className="text-slate-900 font-bold mb-6">{t.footerSection.servicesTitle}</h3>
                             <ul className="space-y-3">
                                 {t.footerSection.servicesList.map((item, idx) => (
                                     <li key={idx}>
-                                        <Link href="/portofolio" className="text-sm hover:text-orange-400 transition-colors block">
+                                        <Link href="/portofolio" className="text-sm text-slate-600 hover:text-orange-600 transition-colors block">
                                             {item}
                                         </Link>
                                     </li>
@@ -269,22 +260,22 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
 
                         {/* Contact Info */}
                         <div>
-                            <h3 className="text-white font-semibold mb-6">{t.footerSection.contactTitle}</h3>
+                            <h3 className="text-slate-900 font-bold mb-6">{t.footerSection.contactTitle}</h3>
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3">
                                     <Mail className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-                                    <span className="text-sm">azizalhadiid55@gmail.com</span>
+                                    <span className="text-sm text-slate-600">azizalhadiid55@gmail.com</span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <MapPin className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-                                    <span className="text-sm">Jambi City, Indonesia<br />Remote Friendly</span>
+                                    <span className="text-sm text-slate-600">Jambi City, Indonesia<br />Remote Friendly</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
 
                     {/* BOTTOM SECTION */}
-                    <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+                    <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
                         <div>
                             &copy; 2025 AzizHadiid. {t.footerSection.rights}
                         </div>
