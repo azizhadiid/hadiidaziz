@@ -19,7 +19,9 @@ interface PortfolioData {
     teknologi: string;
     deskripsi_singkat: string;
     image_url?: string;
-    link_proyek?: string;
+    // Update link lama menjadi dua link baru ini (sesuai info kamu)
+    link_demo?: string;
+    link_github?: string;
     created_at: string;
 }
 
@@ -287,8 +289,7 @@ function PortfolioContent() {
                                                     )) : null}
                                                 </div>
                                                 <Link
-                                                    href={item.link_proyek || '#'}
-                                                    target={item.link_proyek ? "_blank" : "_self"}
+                                                    href={`/portofolio/${item.id}`} // Pastikan ini mengarah ke ID
                                                     className="mt-auto w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-colors"
                                                 >
                                                     {t.portfolioPage.btnView} <ExternalLink className="w-4 h-4" />

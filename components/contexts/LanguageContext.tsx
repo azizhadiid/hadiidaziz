@@ -22,6 +22,18 @@ const dictionary = {
             btnConnect: "Mari Terhubung",
             stats: { exp: "Tahun Pengalaman", proj: "Proyek Selesai", client: "Klien Puas" }
         },
+        // --- TAMBAHAN BARU: HALAMAN DETAIL PORTOFOLIO ---
+        projectDetail: {
+            backBtn: "Kembali ke Portofolio",
+            overview: "Ringkasan Proyek",
+            techStack: "Teknologi yang Digunakan",
+            projectInfo: "Informasi Proyek",
+            date: "Periode Pengerjaan",
+            category: "Kategori",
+            btnDemo: "Kunjungi Demo",
+            btnRepo: "Source Code",
+            btnDisabled: "Tidak Tersedia" // Teks kalau link kosong
+        },
         // --- SECTION ABOUT BARU ---
         aboutSection: {
             tagline: "TENTANG SAYA",
@@ -117,6 +129,18 @@ const dictionary = {
             btnWork: "View My Work",
             btnConnect: "Let's Connect",
             stats: { exp: "Years Experience", proj: "Projects Completed", client: "Happy Clients" }
+        },
+        // --- NEW ADDITION: PROJECT DETAIL PAGE ---
+        projectDetail: {
+            backBtn: "Back to Portfolio",
+            overview: "Project Overview",
+            techStack: "Technologies Used",
+            projectInfo: "Project Information",
+            date: "Development Period",
+            category: "Category",
+            btnDemo: "Visit Live Demo",
+            btnRepo: "Source Code",
+            btnDisabled: "Not Available"
         },
         // --- NEW ABOUT SECTION ---
         aboutSection: {
