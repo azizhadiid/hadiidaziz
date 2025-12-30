@@ -419,3 +419,37 @@ with check (
 );
 
 -- ///////////////////////////// Akhir Tabel Sertifikat
+
+-- ///////////////////////////// Tabel Contact
+-- 1. Membuat Tabel Pesan Kontak
+create table public.contact_messages (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  subject text,
+  message text not null,
+  is_read boolean default false, -- Tandai sudah dibaca/belum
+  created_at timestamptz default now()
+);
+
+-- 2. Mengaktifkan Keamanan (RLS)
+alter table public.contact_messages enable row level security;
+
+-- 3. Policy: SIAPA SAJA (Public/Anon) boleh MENGIRIM pesan
+create policy "Public can insert messages"
+on public.contact_messages
+for insert
+with check (true);
+
+-- 4. Policy: HANYA ADMIN yang boleh MEMBACA pesan
+create policy "Only Admin can view messages"
+on public.contact_messages
+for select
+using (
+  exists (
+    select 1 from public.user_profiles
+    where id = auth.uid()
+    and role = 'admin'
+  )
+);
+-- ///////////////////////////// Akhir Tabel Contact
