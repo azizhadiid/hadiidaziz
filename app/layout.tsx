@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   description: 'Aziz Hadiid - Website Portfolio Aziz Alhadiid.',
   icons: {
     // Menambahkan favicon
-    icon: '/img/logo.png',
-    shortcut: '/img/logo.png',
-    apple: '/img/logo.png', // Opsional: ikon untuk iPhone/iPad
+    icon: '/img/logo.svg',
+    shortcut: '/img/logo.svg',
+    apple: '/img/logo.svg', // Opsional: ikon untuk iPhone/iPad
   },
 };
 
