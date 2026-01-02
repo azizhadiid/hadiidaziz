@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { Code, Briefcase, Box, Braces, Layout, Server, Globe, Database, GraduationCap, Cpu, Building2, Calendar, MapPin } from 'lucide-react';
+import { Code, Briefcase, Box, Braces, Layout, Server, Globe, Database, GraduationCap, Cpu, Building2, Calendar, MapPin, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageProvider, useLanguage } from '@/components/contexts/LanguageContext';
 import MainLayoutGuest from '@/components/layout/guest/MainLayoutGuest';
@@ -159,7 +159,7 @@ function LandingPageContent() {
                                     </div>
                                     <div>
                                         <p className="text-[10px] sm:text-xs text-slate-500">Experience</p>
-                                        <p className="text-sm sm:text-base font-bold text-slate-900">3+ Years</p>
+                                        <p className="text-sm sm:text-base font-bold text-slate-900">2+ Years</p>
                                     </div>
                                 </div>
 
@@ -197,6 +197,31 @@ function LandingPageContent() {
                                 {t.aboutSection.description.map((paragraph, index) => (
                                     <p key={index}>{paragraph}</p>
                                 ))}
+
+                                {/* --- TOMBOL DOWNLOAD CV (UPGRADED GACOR VERSION) --- */}
+                                <div className="pt-6">
+                                    <Button asChild className="
+        h-14 w-full sm:w-auto px-12 text-lg font-bold
+        bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-orange-700 
+        text-white rounded-full 
+        shadow-xl shadow-orange-500/30 hover:shadow-2xl hover:shadow-orange-500/50 
+        hover:-translate-y-1 transition-all duration-300 group
+        flex items-center justify-center
+    ">
+                                        <a
+                                            href="/file/cv.pdf"
+                                            download="CV_Aziz_Alhadiid.pdf"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3" // Tambah gap biar ikon gak nempel teks
+                                        >
+                                            {/* Ikon Download sedikit diperbesar dan animasi bounce */}
+                                            <Download className="w-6 h-6 group-hover:animate-bounce" />
+                                            {t.aboutSection.btnDownload}
+                                        </a>
+                                    </Button>
+                                </div>
+                                {/* ---------------------------------- */}
                             </div>
 
                             {/* --- EDUCATION BLOCK (DYNAMIC DB) --- */}

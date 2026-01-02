@@ -44,6 +44,7 @@ const dictionary = {
                 "Saya adalah Software Developer yang sangat termotivasi dengan pengalaman sebagai Full-stack Developer. Saya memiliki hasrat yang kuat untuk membangun aplikasi yang skalabel dan ramah pengguna.",
                 "Keahlian saya terletak pada pemanfaatan teknologi web modern seperti React, Next.js, Tailwind CSS, dan Node.js untuk mengubah ide kompleks menjadi solusi yang elegan dan fungsional. Saya seorang pembelajar cepat yang bersemangat untuk terus berkembang dan memberikan dampak positif melalui teknologi."
             ],
+            btnDownload: "Unduh CV",
             educationTitle: "Pendidikan",
             skillsTitle: "Arsenat Teknologi",
             skillsDesc: "Alat dan teknologi yang saya gunakan untuk menghidupkan ide."
@@ -152,6 +153,7 @@ const dictionary = {
                 "I am a highly motivated Software Developer with experience as a Full-stack Developer. I have a strong passion for building scalable and user-friendly applications.",
                 "My expertise lies in leveraging modern web technologies such as React, Next.js, Tailwind CSS, and Node.js to transform complex ideas into elegant, functional solutions. I am a quick learner eager to continuously grow and make a positive impact through technology."
             ],
+            btnDownload: "Download CV",
             educationTitle: "Education",
             // Data from CV Education
             skillsTitle: "Tech Arsenal",
