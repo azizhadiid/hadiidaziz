@@ -131,7 +131,7 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                                 if (isHashLink) {
                                     isActive = pathname === '/' && item.path === `/${activeHash}`;
                                 } else {
-                                    isActive = pathname === item.path;
+                                    isActive = pathname === item.path || pathname.startsWith(`${item.path}/`);
                                 }
 
                                 return (
