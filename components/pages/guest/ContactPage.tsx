@@ -178,7 +178,7 @@ function ContactContent() {
                                             placeholder={t.contactPage.form.placeholderName}
                                             value={formData.name}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all mt-2"
                                             required
                                         />
                                     </div>
@@ -192,7 +192,7 @@ function ContactContent() {
                                             placeholder={t.contactPage.form.placeholderEmail}
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all mt-2"
                                             required
                                         />
                                     </div>
@@ -200,7 +200,7 @@ function ContactContent() {
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-slate-700 ml-1">
-                                        {t.contactPage.form.subject}
+                                        {t.contactPage.form.subject} <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         name="subject"
@@ -208,7 +208,7 @@ function ContactContent() {
                                         placeholder={t.contactPage.form.placeholderSubject}
                                         value={formData.subject}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all mt-2"
                                     />
                                 </div>
 
@@ -222,7 +222,7 @@ function ContactContent() {
                                         placeholder={t.contactPage.form.placeholderMsg}
                                         value={formData.message}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none mt-2"
                                         required
                                     ></textarea>
                                 </div>
