@@ -491,6 +491,8 @@ export default function AdminPengalamanPage() {
                                             <option value="Freelance">Freelance</option>
                                             <option value="Internship">Internship</option>
                                             <option value="Contract">Contract</option>
+                                            <option value="Campus Projects">Campus Projects</option>
+                                            <option value="Other">Other</option>
                                         </select>
                                     </div>
                                 </div>
