@@ -111,8 +111,8 @@ function LandingPageContent() {
                                 </Button>
                             </div>
                             <div className="grid grid-cols-3 gap-4 sm:gap-8 pt-6 sm:pt-8 border-t border-slate-200/60">
-                                <div><div className="text-2xl sm:text-3xl font-bold text-slate-900">2+</div><div className="text-[10px] sm:text-xs text-slate-500 uppercase mt-1">{t.hero.stats.exp}</div></div>
-                                <div><div className="text-2xl sm:text-3xl font-bold text-slate-900">10+</div><div className="text-[10px] sm:text-xs text-slate-500 uppercase mt-1">{t.hero.stats.proj}</div></div>
+                                <div><div className="text-2xl sm:text-3xl font-bold text-slate-900">1+</div><div className="text-[10px] sm:text-xs text-slate-500 uppercase mt-1">{t.hero.stats.exp}</div></div>
+                                <div><div className="text-2xl sm:text-3xl font-bold text-slate-900">7+</div><div className="text-[10px] sm:text-xs text-slate-500 uppercase mt-1">{t.hero.stats.proj}</div></div>
                                 <div><div className="text-2xl sm:text-3xl font-bold text-slate-900">5+</div><div className="text-[10px] sm:text-xs text-slate-500 uppercase mt-1">{t.hero.stats.client}</div></div>
                             </div>
                         </div>
@@ -159,7 +159,7 @@ function LandingPageContent() {
                                     </div>
                                     <div>
                                         <p className="text-[10px] sm:text-xs text-slate-500">Experience</p>
-                                        <p className="text-sm sm:text-base font-bold text-slate-900">2+ Years</p>
+                                        <p className="text-sm sm:text-base font-bold text-slate-900">1+ Years</p>
                                     </div>
                                 </div>
 
