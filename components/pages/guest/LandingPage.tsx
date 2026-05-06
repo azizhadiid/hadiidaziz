@@ -145,7 +145,7 @@ function LandingPageContent() {
                                         <Code className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] sm:text-xs text-slate-500">Specialized as</p>
+                                        <p className="text-[10px] sm:text-xs text-slate-500">Spesialisasi Sebagai</p>
                                         <p className="text-sm sm:text-base font-bold text-slate-900">Full-Stack Dev</p>
                                     </div>
                                 </div>
@@ -158,8 +158,8 @@ function LandingPageContent() {
                                         <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] sm:text-xs text-slate-500">Experience</p>
-                                        <p className="text-sm sm:text-base font-bold text-slate-900">1+ Years</p>
+                                        <p className="text-[10px] sm:text-xs text-slate-500">Pengalaman</p>
+                                        <p className="text-sm sm:text-base font-bold text-slate-900">1+ Tahun</p>
                                     </div>
                                 </div>
 
@@ -167,7 +167,7 @@ function LandingPageContent() {
                                 <div className="absolute top-2 left-0 sm:top-6 sm:left-6 lg:left-0
                                     bg-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 z-20">
                                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                    <p className="text-[10px] sm:text-xs font-medium text-slate-700 whitespace-nowrap">Available for work</p>
+                                    <p className="text-[10px] sm:text-xs font-medium text-slate-700 whitespace-nowrap">Bersedia bekerja</p>
                                 </div>
 
                             </div>
