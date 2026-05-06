@@ -99,13 +99,13 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
 
                         {/* Right Actions */}
                         <div className="hidden lg:flex items-center gap-5">
-                            <button
+                            {/* <button
                                 onClick={toggleLanguage}
                                 className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-slate-100 text-sm font-bold text-slate-600 hover:border-orange-500 hover:text-orange-600 transition-all cursor-pointer"
                             >
                                 <Globe className="w-4 h-4" />
                                 <span>{lang === 'id' ? 'IND' : 'ENG'}</span>
-                            </button>
+                            </button> */}
                             <div className="h-8 w-px bg-slate-200 mx-1"></div>
                             <a href="https://github.com/azizhadiid" target="_blank" rel="noreferrer" className="text-slate-500 hover:text-orange-600 transition-colors"><Github className="w-6 h-6" /></a>
                             <a href="https://www.linkedin.com/in/aziz-alhadiid" target="_blank" rel="noreferrer" className="text-slate-500 hover:text-orange-600 transition-colors"><Linkedin className="w-6 h-6" /></a>
@@ -277,7 +277,7 @@ export default function MainLayoutGuest({ children }: MainLayoutGuestProps) {
                     {/* BOTTOM SECTION */}
                     <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
                         <div>
-                            &copy; 2025 AzizHadiid. {t.footerSection.rights}
+                            &copy; 2026 AzizHadiid. {t.footerSection.rights}
                         </div>
                         <div className="flex items-center gap-1">
                             {t.footerSection.madeWith} <Heart className="w-3 h-3 text-red-500 fill-red-500 animate-pulse" /> in Jambi
