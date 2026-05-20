@@ -41,8 +41,9 @@ const dictionary = {
             titleAccent: "Solusi Digital.",
             // Data diambil dan diringkas dari Ringkasan CV
             description: [
-                "Saya adalah Software Developer yang sangat termotivasi dengan pengalaman sebagai Full-stack Developer. Saya memiliki hasrat yang kuat untuk membangun aplikasi yang skalabel dan ramah pengguna.",
-                "Keahlian saya terletak pada pemanfaatan teknologi web modern seperti React, Next.js, Tailwind CSS, dan Node.js untuk mengubah ide kompleks menjadi solusi yang elegan dan fungsional. Saya seorang pembelajar cepat yang bersemangat untuk terus berkembang dan memberikan dampak positif melalui teknologi."
+                "Mahasiswa Sistem Informasi Universitas Jambi dengan minat pada pengembangan perangkat lunak dan desain produk digital. Berpengalaman sebagai Backend & Frontend Developer menggunakan PHP, JavaScript, TypeScript, React, Next.js, Laravel, dan Node.js, serta basis data MySQL & Postgres SQL. Aktif dalam proyek kolaboratif sebagai developer, dan memiliki berbagai macam pencapaian seperti Medali Perak NEIRA 2 pada lomba Bisnis Plan Nasional, penerima pendanaan PMW UNJA 2025, Juara 1 Study CLub Pengembangan Website, dan Medali Perunggu pada lomba Esai Naisional NWF 5."
+                // "Saya adalah Software Developer yang sangat termotivasi dengan pengalaman sebagai Full-stack Developer. Saya memiliki hasrat yang kuat untuk membangun aplikasi yang skalabel dan ramah pengguna.",
+                // "Keahlian saya terletak pada pemanfaatan teknologi web modern seperti React, Next.js, Tailwind CSS, dan Node.js untuk mengubah ide kompleks menjadi solusi yang elegan dan fungsional. Saya seorang pembelajar cepat yang bersemangat untuk terus berkembang dan memberikan dampak positif melalui teknologi."
             ],
             btnDownload: "Unduh CV",
             educationTitle: "Pendidikan",
